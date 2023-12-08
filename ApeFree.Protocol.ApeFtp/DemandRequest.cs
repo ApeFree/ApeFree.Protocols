@@ -9,17 +9,16 @@ namespace ApeFree.Protocol.ApeFtp
     /// </summary>
     public class DemandRequest : BaseRequest
     {
-        public byte[] MD5 { get; set; }
-        public uint TotalLength { get; set; }
         public uint SegmentMaxLength { get; set; }
 
-        public DemandRequest() : base(CommandCode.DemandRequest) { }
-        public DemandRequest(IEnumerable<byte> data) : base(CommandCode.DemandRequest)
+        public DemandRequest(byte[] data) : base(CommandCode.DemandRequest, data.Skip(1).Take(16).ToArray(), BitConverter.ToUInt32(data.Skip(17).Take(4).Reverse().ToArray(), 0))
         {
-            List<byte> bytes = data.ToList();
-            MD5 = bytes.Skip(1).Take(16).ToArray();
-            TotalLength = BitConverter.ToUInt32(bytes.Skip(17).Take(4).Reverse().ToArray(), 0);
-            SegmentMaxLength = BitConverter.ToUInt32(bytes.Skip(21).Take(4).Reverse().ToArray(), 0);
+            SegmentMaxLength = BitConverter.ToUInt32(data.Skip(21).Take(4).Reverse().ToArray(), 0);
+        }
+
+        public DemandRequest(byte[] mD5, uint totalLength, uint segmentMaxLength) : base(CommandCode.DemandRequest, mD5, totalLength)
+        {
+            SegmentMaxLength = segmentMaxLength;
         }
 
         public override byte[] GetBytes()

@@ -1,32 +1,41 @@
-﻿using System.Collections.Generic;
+﻿using STTech.BytesIO.Core;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace ApeFree.Protocol.ApeFtp
 {
     /// <summary>
     /// 
     /// </summary>
-    public abstract class BaseRequest
+    public abstract class BaseRequest : IRequest
     {
-        public uint RequestId {  get; set; }
         public CommandCode CommandCode { get; }
+        public byte[] MD5 { get; set; }
 
-        public BaseRequest(CommandCode code)
+        public uint TotalLength { get; set; }
+
+        public BaseRequest(CommandCode code, byte[] mD5, uint totalLength)
         {
             CommandCode = code;
+            MD5 = mD5;
+            TotalLength = totalLength;
         }
 
         public abstract byte[] GetBytes();
     }
 
-    public abstract class BaseResponse
+    public abstract class BaseResponse : Response
     {
-        public uint RequestId { get; set; }
 
         public CommandCode CommandCode { get; }
 
-        public BaseResponse(CommandCode code)
+        public MD5 MD5 { get; set; }
+
+        public int TotalLength { get; set; }
+
+        public BaseResponse(byte[] bytes) : base(bytes)
         {
-            CommandCode = code;
+
         }
 
         public abstract byte[] GetBytes();
