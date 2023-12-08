@@ -26,6 +26,16 @@
         /// </summary>
         InsufficientDiskSpace = 101,
 
+        /// <summary>
+        /// 文件总长度过大
+        /// </summary>
+        FileSizeTooLarge = 102,
+
+        /// <summary>
+        /// 相同文件正在传输中
+        /// </summary>
+        SameFileTransmitting = 102,
+
         // =============== 150~199 错误响应码:发送阶段   ===============
 
         /// <summary>
@@ -37,6 +47,11 @@
         /// 无效的数据段序号
         /// </summary>
         InvalidSegmentIndex = 151,
+
+        /// <summary>
+        /// 无效的取消指令
+        /// </summary>
+        InvalidCancelCommand = 151,
 
         // =============== 200~255 错误响应码:完成阶段   ===============
 
