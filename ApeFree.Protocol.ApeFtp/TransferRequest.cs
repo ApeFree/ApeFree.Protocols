@@ -9,7 +9,8 @@ namespace ApeFree.Protocol.ApeFtp
     /// </summary>
     public class TransferRequest : BaseRequest
     {
-        public IEnumerable<byte> MD5 { get; set; }
+        public byte[] MD5 { get; set; }
+        public uint TotalLength { get; set; }
         public FuncCode Opcode { get; set; }
         public ushort SegmentCount { get; set; }
         public ushort SegmentIndex { get; set; }

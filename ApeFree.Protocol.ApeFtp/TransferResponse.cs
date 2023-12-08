@@ -10,6 +10,7 @@ namespace ApeFree.Protocol.ApeFtp
     public class TransferResponse : BaseRequest
     {
         public IEnumerable<byte> MD5 { get; set; }
+        public uint TotalLength { get; set; }
         public ResultCode ResultCode { get; set; }
         public byte MessageLength => (byte)Message.Length;
         public string Message { get; set; } = "";
