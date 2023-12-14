@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ApeFree.Protocol.ApeFtp
 {
-    public abstract class ApeFtpReceiver
+    public abstract class ApeFtpReceiver : ApeFtpClient
     {
         /// <summary>
         /// 最大段数据长度
@@ -26,12 +30,44 @@ namespace ApeFree.Protocol.ApeFtp
         /// </summary>
         public string TransferCompletedPath { get; set; }
 
+
+        protected ApeFtpReceiver(Action<byte[]> sendBytesHandler) : base(sendBytesHandler) { }
+
+        protected override void OnUnpackerDataParsed(object sender, STTech.BytesIO.Core.Component.DataParsedEventArgs e)
+        {
+            CommandCode command = (CommandCode)e.Data.FirstOrDefault();
+
+            switch (command)
+            {
+                case CommandCode.DemandRequest:
+                    {
+                        var resp = OnDemandReceived(new DemandRequest(e.Data));
+                        SendBytesHandler?.Invoke(resp.GetBytes());
+                    }
+                    break;
+                case CommandCode.TransferRequest:
+                    {
+                        var req = new TransferRequest(e.Data);
+                        var resp = OnTransferReceived(req);
+                        SendBytesHandler?.Invoke(resp.GetBytes());
+                    }
+                    break;
+                case CommandCode.TransferResponse:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 当收到文件传输申请时
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected virtual TransferResponse OnDemandReceived(DemandRequest request)
         {
             // 构造响应实体
             var resp = new TransferResponse()
             {
-                MD5 = request.MD5,
+                Md5 = request.MD5,
                 TotalLength = request.TotalLength,
             };
 
@@ -87,19 +123,24 @@ namespace ApeFree.Protocol.ApeFtp
             return resp;
         }
 
+        /// <summary>
+        /// 当收到传输消息时
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected virtual TransferResponse OnTransferReceived(TransferRequest request)
         {
             // 构造响应实体
             var resp = new TransferResponse()
             {
-                MD5 = request.MD5,
+                Md5 = request.MD5,
                 TotalLength = request.TotalLength,
             };
 
             var state = GetTransferTaskState(request.MD5, request.TotalLength);
 
             // 如果取消了文件传输
-            if (request.Opcode == FuncCode.Cancel)
+            if (request.FunctionCode == FunctionCode.Cancel)
             {
                 // 取消传输的指令仅对“传输中”的任务有效
                 if (state == TransferTaskState.Transmitting)
@@ -159,8 +200,16 @@ namespace ApeFree.Protocol.ApeFtp
         /// <returns></returns>
         protected abstract TransferTaskState GetTransferTaskState(byte[] md5, uint fileLength);
 
+        /// <summary>
+        /// 追加段数据到文件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected abstract TransferResponse AppendSegmentToFile(TransferRequest request);
 
+        /// <summary>
+        /// 任务传输状态
+        /// </summary>
         public enum TransferTaskState
         {
             /// <summary>
@@ -177,6 +226,99 @@ namespace ApeFree.Protocol.ApeFtp
             /// 已完成
             /// </summary>
             Completed,
+        }
+    }
+
+    public class SimpleReceiver : ApeFtpReceiver
+    {
+        public SimpleReceiver(Action<byte[]> sendBytesHandler) : base(sendBytesHandler) { }
+
+        protected override TransferResponse AppendSegmentToFile(TransferRequest request)
+        {
+            var md5 = request.MD5;
+            var fileLength = request.TotalLength;
+
+            var sessionId = $"{md5.ToHexString()}-{fileLength}";
+            var sessionDir = Path.Combine(TransferCachePath, sessionId);
+            var filePath = Path.Combine(sessionDir, sessionId);
+
+            using (var fs = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+            {
+                fs.Write(request.Data, 0, request.Data.Length);
+            }
+
+            var resp = new TransferResponse()
+            {
+                Md5 = md5,
+                ResultCode = ResultCode.Continue,
+                TotalLength = fileLength,
+            };
+
+            if (request.SegmentIndex + 1 == request.SegmentCount)
+            {
+                FileInfo fileInfo = new FileInfo(filePath);
+                if (fileInfo.Length != request.TotalLength)
+                {
+                    resp.ResultCode = ResultCode.Md5Mismatching;
+                }
+                else if (!fileInfo.GetMD5().SequenceEqual(request.MD5))
+                {
+                    resp.ResultCode = ResultCode.Md5Mismatching;
+                }
+                else
+                {
+                    resp.ResultCode = ResultCode.Completed;
+                }
+
+
+            }
+
+            return resp;
+        }
+
+        protected override bool CreateFileCache(byte[] md5, uint fileLength)
+        {
+            var sessionId = $"{md5.ToHexString()}-{fileLength}";
+            var sessionDir = Path.Combine(TransferCachePath, sessionId);
+            Directory.CreateDirectory(sessionDir);
+            return true;
+        }
+
+        protected override TransferTaskState GetTransferTaskState(byte[] md5, uint fileLength)
+        {
+            var sessionId = $"{md5.ToHexString()}-{fileLength}";
+            var sessionDir = Path.Combine(TransferCachePath, sessionId);
+
+            if (!Directory.Exists(sessionDir))
+            {
+                return TransferTaskState.Nonexistent;
+            }
+
+            var filePath = Path.Combine(sessionDir, sessionId);
+            FileInfo file = new FileInfo(filePath);
+
+            if (!file.Exists)
+            {
+                return TransferTaskState.Transmitting;
+            }
+
+            if (file.Length < fileLength)
+            {
+                return TransferTaskState.Transmitting;
+            }
+            else
+            {
+                return TransferTaskState.Completed;
+            }
+        }
+
+        protected override bool OnTransferCancelled(byte[] md5, uint fileLength)
+        {
+            var sessionId = $"{md5.ToHexString()}-{fileLength}";
+            var sessionDir = Path.Combine(TransferCachePath, sessionId);
+            Directory.Delete(sessionDir, true);
+
+            return true;
         }
     }
 }

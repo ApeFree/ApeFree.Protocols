@@ -6,12 +6,11 @@ using System.Text;
 
 namespace ApeFree.Protocol.ApeFtp
 {
-    internal class ApeFtpUnpacker : Unpacker
+    public class ApeFtpUnpacker : Unpacker
     {
         protected override int CalculatePacketLength(byte[] bytes)
         {
-         
-            if (bytes.Length < 25)
+            if (bytes.Length < 23)
             {
                 return 0;
             }
@@ -23,10 +22,12 @@ namespace ApeFree.Protocol.ApeFtp
                 case CommandCode.DemandRequest:
                     return 25;
                 case CommandCode.TransferRequest:
-                    return 30+ (int)BitConverter.ToUInt32(bytes.Skip(27).Take(4).Reverse().ToArray(), 0);
+                    var len = 30 + (int)BitConverter.ToUInt32(bytes.Skip(26).Take(4).Reverse().ToArray(), 0);
+                    return len;
                 case CommandCode.TransferResponse:
-                    return 23 + bytes.ElementAt(23);
+                    return 23 + bytes.ElementAt(22);
                 default:
+                    // TODO:
                     return 0;
             }
 

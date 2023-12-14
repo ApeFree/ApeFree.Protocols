@@ -5,7 +5,9 @@ VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApeFree.Protocol.ApeFtp", "ApeFree.Protocol.ApeFtp\ApeFree.Protocol.ApeFtp.csproj", "{E34785DD-68D7-4A51-993F-ECC7D77B192A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApeFree.Protocol.ApeRPC", "ApeFree.Protocol.ApeRPC\ApeFree.Protocol.ApeRPC.csproj", "{CCC40BEA-402D-4D50-92DE-380E3E65E470}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApeFree.Protocol.ApeRPC", "ApeFree.Protocol.ApeRPC\ApeFree.Protocol.ApeRPC.csproj", "{CCC40BEA-402D-4D50-92DE-380E3E65E470}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApeFree.Protocol.ApeFtp.Demo", "ApeFree.Protocol.ApeFtp.Demo\ApeFree.Protocol.ApeFtp.Demo.csproj", "{29133C36-704C-4BA5-8665-D8D90050FA95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{CCC40BEA-402D-4D50-92DE-380E3E65E470}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCC40BEA-402D-4D50-92DE-380E3E65E470}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCC40BEA-402D-4D50-92DE-380E3E65E470}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29133C36-704C-4BA5-8665-D8D90050FA95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29133C36-704C-4BA5-8665-D8D90050FA95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29133C36-704C-4BA5-8665-D8D90050FA95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29133C36-704C-4BA5-8665-D8D90050FA95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

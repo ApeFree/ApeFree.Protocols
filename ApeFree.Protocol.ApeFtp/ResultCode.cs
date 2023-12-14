@@ -34,7 +34,7 @@
         /// <summary>
         /// 相同文件正在传输中
         /// </summary>
-        SameFileTransmitting = 102,
+        SameFileTransmitting = 103,
 
         // =============== 150~199 错误响应码:发送阶段   ===============
 

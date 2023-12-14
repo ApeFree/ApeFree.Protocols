@@ -6,10 +6,10 @@
     public enum CommandCode : byte
     {
         // =============== 请求类命令区间 ===============
-        DemandRequest = 0xA0,
-        TransferRequest = 0xA1,
+        DemandRequest = 0x01,
+        TransferRequest = 0x02,
 
         // =============== 响应类命令区间 ===============
-        TransferResponse = 0xF0
+        TransferResponse = 0x03
     }
 }

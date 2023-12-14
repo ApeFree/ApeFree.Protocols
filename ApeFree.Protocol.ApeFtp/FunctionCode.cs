@@ -3,7 +3,7 @@
     /// <summary>
     /// 传输功能码
     /// </summary>
-    public enum FuncCode : byte
+    public enum FunctionCode : byte
     {
         /// <summary>
         /// 取消传输任务
