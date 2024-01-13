@@ -20,7 +20,7 @@ namespace ApeFree.Protocol.ApeFtp
 
         private void Unpacker_OnDataParsed(object sender, STTech.BytesIO.Core.Component.DataParsedEventArgs e)
         {
-            Task.Run(() => OnUnpackerDataParsed(sender, e));
+            OnUnpackerDataParsed(sender, e);
         }
 
         protected abstract void OnUnpackerDataParsed(object sender, STTech.BytesIO.Core.Component.DataParsedEventArgs e);

@@ -112,7 +112,14 @@ namespace ApeFree.Protocol.ApeFtp
             };
             var data = new byte[session.SegmentLength];
             request.CurrentSegmentLength = (uint)session.Stream.Read(data, 0, (int)session.SegmentLength);
-            request.Data = data;
+            if (session.SegmentLength == request.CurrentSegmentLength)
+            {
+                request.Data = data;
+            }
+            else
+            {
+                request.Data = data.Take((int)request.CurrentSegmentLength).ToArray();
+            }
 
             var bytes = request.GetBytes();
             SendBytesHandler(bytes);

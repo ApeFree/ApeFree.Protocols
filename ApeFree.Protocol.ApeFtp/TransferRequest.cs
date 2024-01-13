@@ -49,7 +49,7 @@ namespace ApeFree.Protocol.ApeFtp
         {
             return new byte[] { (byte)CommandCode }.Merge(
                                     MD5,
-                                      BitConverter.GetBytes(TotalLength).Reverse(),
+                                    BitConverter.GetBytes(TotalLength).Reverse(),
                                     new byte[] { (byte)FunctionCode },
                                     BitConverter.GetBytes(SegmentCount).Reverse(),
                                     BitConverter.GetBytes(SegmentIndex).Reverse(),
