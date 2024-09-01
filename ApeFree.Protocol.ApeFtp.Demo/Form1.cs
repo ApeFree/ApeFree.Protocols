@@ -42,7 +42,7 @@ namespace ApeFree.Protocol.ApeFtp.Demo
             ftpSender.Input(e.Data);
         }
 
-        private void Server_ClientConnected(object sender, STTech.BytesIO.Tcp.Entity.ClientConnectedEventArgs e)=> e.Client.OnDataReceived += Client_OnDataReceived;
+        private void Server_ClientConnected(object sender, STTech.BytesIO.Tcp.ClientConnectedEventArgs e)=> e.Client.OnDataReceived += Client_OnDataReceived;
         private void Client_OnDataReceived(object sender, STTech.BytesIO.Core.DataReceivedEventArgs e) => ftpReceiver.Input(e.Data);
 
         private void button1_Click(object sender, EventArgs e)
