@@ -17,6 +17,6 @@ namespace ApeFree.Protocols.Json.JsonRpc
         public JsonRpcError Error { get; set; }
 
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
 }

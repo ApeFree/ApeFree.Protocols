@@ -17,7 +17,7 @@ namespace ApeFree.Protocols.Json.JsonRpc
         public object[] Params { get; set; }
 
         [JsonProperty("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
 
     }
