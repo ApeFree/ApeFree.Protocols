@@ -10,7 +10,7 @@ namespace ApeFree.Protocols.Json.Jbin
 {
     public class JbinObject
     {
-        public static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings()
+        public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.All,
             NullValueHandling = NullValueHandling.Ignore,
@@ -180,26 +180,6 @@ namespace ApeFree.Protocols.Json.Jbin
             {
                 return Parse(stream);
             }
-
-            //// 数据块个数
-            //var blockCount = BitConverter.ToUInt32(bytes, 0);
-
-            //// 每个数据块的大小
-            //var blockSizeArray = bytes.Skip(4).Take((int)(blockCount * 4)).Slice(4).Select(x => BitConverter.ToUInt32(x, 0)); ;
-
-            //// 每个数据块的内容
-            //var blocks = new List<ArraySegment<byte>>();
-            //var index = (blockCount + 1) * sizeof(uint);
-            //foreach (var size in blockSizeArray)
-            //{
-            //    blocks.Add(new ArraySegment<byte>(bytes, (int)index, (int)size));
-            //    index += size;
-            //}
-
-            //// 构造Jbin对象
-            //var jbin = new JbinObject(blocks);
-
-            //return jbin;
         }
 
         /// <summary>
