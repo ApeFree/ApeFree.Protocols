@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.0.1.6-beta0904</Version>
+		<Version>0.0.1.7-beta0918</Version>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Company>ApeFree</Company>
