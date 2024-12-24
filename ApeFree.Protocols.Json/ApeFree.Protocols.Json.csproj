@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.0.1.8-beta1022</Version>
+		<Version>0.0.1.9-beta1224</Version>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Company>ApeFree</Company>
@@ -32,7 +32,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="STTech.CodePlus" Version="1.7.2.1" />
+		<PackageReference Include="STTech.CodePlus" Version="1.7.2.4" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
