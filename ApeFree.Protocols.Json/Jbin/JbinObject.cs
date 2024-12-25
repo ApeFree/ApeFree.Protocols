@@ -21,6 +21,7 @@ namespace ApeFree.Protocols.Json.Jbin
             {
                 new JbinBytesConverter(),
                 new JbinStructConverter(),
+                new JbinPrimitiveArrayConverter(),
                 //new JbinStringConverter(),
                 new JbinBitmapConverter(),
                 new JbinConcurrentQueueShortsConverter(),
