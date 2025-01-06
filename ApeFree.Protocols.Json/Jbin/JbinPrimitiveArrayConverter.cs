@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace ApeFree.Protocols.Json.Jbin
@@ -6,7 +9,7 @@ namespace ApeFree.Protocols.Json.Jbin
     /// <summary>
     /// 基元类型数组转换器
     /// </summary>
-    public class JbinPrimitiveArrayConverter : JbinConverter<object>
+    public class JbinPrimitiveArrayConverter : JbinConverter<Array>
     {
         /// <inheritdoc/>
         public override bool CanConvert(Type objectType)
@@ -32,7 +35,7 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         /// <inheritdoc/>
-        protected override object ConvertBytesToValue(byte[] bytes, Type objType)
+        protected override Array ConvertBytesToValue(byte[] bytes, Type objType)
         {
             var elementType = objType.GetElementType();
 
@@ -48,7 +51,7 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         /// <inheritdoc/>
-        protected override byte[] ConvertValueToBytes(object value)
+        protected override byte[] ConvertValueToBytes(Array value)
         {
             if (value is byte[] data)
             {
@@ -56,7 +59,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             else
             {
-                var bytes = ConvertArrayToBytes((Array)value);
+                var bytes = ConvertArrayToBytes(value);
                 return bytes;
             }
         }
@@ -82,7 +85,7 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <param name="elemType"></param>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        private object ConvertBytesToArray(Type elemType, byte[] bytes)
+        private Array ConvertBytesToArray(Type elemType, byte[] bytes)
         {
             int size = Marshal.SizeOf(elemType);
             int length = bytes.Length / size;
