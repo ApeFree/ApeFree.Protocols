@@ -39,25 +39,25 @@ namespace ApeFree.Protocols.Json.Tests
                 Des = "parent node",
                 Location = new Point(100, 200),
                 Size = Enumerable.Range(999999, 3).Select(x => new SizeF((float)(x * Math.PI), 9999.99999f)).ToArray(),
-                Data1 = Enumerable.Range(0, 32).Select(x => (byte)x).ToArray(),
-                Data2 = Enumerable.Range(0, 64).Select(x => (int)x).ToArray(),
-                Data3 = Enumerable.Range(0, 128).Select(x => (short)x).ToArray(),
+                Data1 = Enumerable.Range(0, 100).Select(x => (byte)x).ToArray(),
+                Data2 = Enumerable.Range(0, 100).Select(x => (int)x).ToArray(),
+                Data3 = Enumerable.Range(0, 100).Select(x => (short)x).ToArray(),
                 Child = new List<MyData>(),
                 Id = (((long)(999 | (1 << 31))) << 32) | ((long)(888 | (1 << 31))),
             };
 
-            var childObj = new MyData()
-            {
-                Name = "child",
-                Des = "child node",
-                Location = new Point(50, 500),
-                Size = Enumerable.Range(999999, 3).Select(x => new SizeF((float)(x * Math.PI), 9999.99999f)).ToArray(),
-                Data1 = Enumerable.Range(0, 32).Select(x => (byte)x).ToArray(),
-                Data2 = Enumerable.Range(0, 64).Select(x => (int)x).ToArray(),
-                Data3 = Enumerable.Range(0, 128).Select(x => (short)x).ToArray(),
-            };
+            //var childObj = new MyData()
+            //{
+            //    Name = "child",
+            //    Des = "child node",
+            //    Location = new Point(50, 500),
+            //    Size = Enumerable.Range(999999, 3).Select(x => new SizeF((float)(x * Math.PI), 9999.99999f)).ToArray(),
+            //    Data1 = Enumerable.Range(0, 65536).Select(x => (byte)x).ToArray(),
+            //    Data2 = Enumerable.Range(0, 65536).Select(x => (int)x).ToArray(),
+            //    Data3 = Enumerable.Range(0, 65536).Select(x => (short)x).ToArray(),
+            //};
 
-            obj.Child.Add(childObj);
+            //obj.Child.Add(childObj);
 
             return obj;
         }

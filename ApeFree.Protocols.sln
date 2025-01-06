@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "STTech.BytesIO.Tcp", "..\ST
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "STTech.BytesIO.Core", "..\STTech.BytesIO\STTech.BytesIO.Core\STTech.BytesIO.Core.csproj", "{92A9884A-4972-4C87-BB12-43B43EBECAE7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "STTech.CodePlus", "..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj", "{E0857C3F-7310-4996-BB13-E2BD7808CC57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{92A9884A-4972-4C87-BB12-43B43EBECAE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92A9884A-4972-4C87-BB12-43B43EBECAE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92A9884A-4972-4C87-BB12-43B43EBECAE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0857C3F-7310-4996-BB13-E2BD7808CC57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0857C3F-7310-4996-BB13-E2BD7808CC57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0857C3F-7310-4996-BB13-E2BD7808CC57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0857C3F-7310-4996-BB13-E2BD7808CC57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +64,7 @@ Global
 		{D297206D-3454-40B8-BFA2-08EB79C8E5AA} = {968F7BE6-277A-4FB7-9CA8-E1755CFDCBCE}
 		{721E2EBA-04AA-4AEB-8E48-E355E3D123AA} = {C4FDA98C-0938-45F1-A36D-808BE0E5D20D}
 		{92A9884A-4972-4C87-BB12-43B43EBECAE7} = {C4FDA98C-0938-45F1-A36D-808BE0E5D20D}
+		{E0857C3F-7310-4996-BB13-E2BD7808CC57} = {C4FDA98C-0938-45F1-A36D-808BE0E5D20D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EB5F5086-8033-4B53-AEE9-F517A98C8EE1}
