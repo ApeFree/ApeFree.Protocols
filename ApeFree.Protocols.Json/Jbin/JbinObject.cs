@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
@@ -19,14 +20,16 @@ namespace ApeFree.Protocols.Json.Jbin
 
             Converters = new List<JsonConverter>
             {
+                new JbinDeserializer(),
+                new JbinGenericArrayConverter(),
                 new JbinBytesConverter(),
-                new JbinStructConverter(),
-                new JbinPrimitiveArrayConverter(),
+                //new JbinGenericStructConverter(),
                 new JbinStringDictArrayConverter(),
+                new JbinPrimitiveArrayConverter(),
                 //new JbinStringConverter(),
-                new JbinBitmapConverter(),
-                new JbinConcurrentQueueShortsConverter(),
-                new JbinObjectConverter(),
+                //new JbinBitmapConverter(),
+                //new JbinConcurrentQueueShortsConverter(),
+                //new JbinObjectConverter(),
             },
         };
 
@@ -111,7 +114,7 @@ namespace ApeFree.Protocols.Json.Jbin
 
             var types = Header.Types.ToList();
 
-            var context = new JbinSerializeContext(DataBlocks, types, settings);
+            var context = new JbinSerializeContext(DataBlocks, types, settings, SerializationMode.Deserialize);
 
             settings.Converters.ForEach(x =>
             {
@@ -141,7 +144,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
 
             // 构造Jbin序列化上下文
-            var context = new JbinSerializeContext(settings);
+            var context = new JbinSerializeContext(settings, SerializationMode.Serialize);
 
             // 为所有转换器初始化
             settings.Converters.ForEach(x =>

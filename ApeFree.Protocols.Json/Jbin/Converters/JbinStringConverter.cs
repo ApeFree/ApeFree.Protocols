@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
-    public class JbinStringConverter : JbinConverter<string>
+    /*
+    public class JbinStringConverter : JbinSerializer<string>
     {
-        protected override string ConvertBytesToValue(byte[] bytes, Type objectType)
+        protected override string ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
         {
             return bytes.EncodeToString();
         }
@@ -20,9 +20,9 @@ namespace ApeFree.Protocols.Json.Jbin
         }
     }
 
-    public class JbinStringArrayConverter : JbinConverter<string[]>
+    public class JbinStringArrayConverter : JbinSerializer<string[]>
     {
-        protected override string[] ConvertBytesToValue(byte[] bytes, Type objectType)
+        protected override string[] ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
         {
             using (MemoryStream stream = new MemoryStream(bytes))
             {
@@ -89,11 +89,16 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             return buffer;
         }
-    }
+    }*/
 
-    public class JbinStringDictArrayConverter : JbinConverter<string[]>
+    public class JbinStringDictArrayConverter : JbinSerializer<string[]>, IJbinFieldDeserializer
     {
-        protected override string[] ConvertBytesToValue(byte[] bytes, Type objectType)
+        public bool CanDeserialize(Type defineType, Type realType)
+        {
+            return realType == typeof(string[]);
+        }
+
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
         {
             using (MemoryStream stream = new MemoryStream(bytes))
             {
@@ -136,8 +141,9 @@ namespace ApeFree.Protocols.Json.Jbin
             }
         }
 
-        protected override byte[] ConvertValueToBytes(string[] value)
+        public override byte[] ConvertValueToBytes(object array)
         {
+            var value = (string[])array;
             var dict = value.Distinct().ToArray();
 
             var len = dict.Sum(Encoding.UTF8.GetByteCount) + (2 + dict.Length + value.Length) * sizeof(int);

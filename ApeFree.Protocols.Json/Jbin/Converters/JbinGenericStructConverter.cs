@@ -1,60 +1,69 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Xml.Linq;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
-    public class JbinStructConverter : JbinConverter<object>
+    public class JbinGenericStructConverter : JbinSerializer<object>, IJbinFieldConverter
     {
         public readonly static Type[] SupportedTypes = { typeof(Point), typeof(PointF), typeof(Size), typeof(SizeF), typeof(Color) };
 
-        public override bool CanConvert(Type objectType)
+        public bool CanDeserialize(Type defineType, Type realType)
+        {
+            return SupportedTypes.Contains(realType);
+        }
+
+        public override bool CanSerialize(Type objectType)
         {
             return SupportedTypes.Contains(objectType);
         }
 
-        protected override object ConvertBytesToValue(byte[] bytes, Type objType)
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
         {
-            if (objType == typeof(Point))
+            if (realType == typeof(Point))
             {
                 var x = BitConverter.ToInt32(bytes, 0);
                 var y = BitConverter.ToInt32(bytes, 4);
                 return new Point(x, y);
             }
 
-            if (objType == typeof(PointF))
+            if (realType == typeof(PointF))
             {
                 var x = BitConverter.ToSingle(bytes, 0);
                 var y = BitConverter.ToSingle(bytes, 4);
                 return new PointF(x, y);
             }
 
-            if (objType == typeof(Size))
+            if (realType == typeof(Size))
             {
                 var w = BitConverter.ToInt32(bytes, 0);
                 var h = BitConverter.ToInt32(bytes, 4);
                 return new Size(w, h);
             }
 
-            if (objType == typeof(SizeF))
+            if (realType == typeof(SizeF))
             {
                 var w = BitConverter.ToSingle(bytes, 0);
                 var h = BitConverter.ToSingle(bytes, 4);
                 return new SizeF(w, h);
             }
 
-            if (objType == typeof(Color))
+            if (realType == typeof(Color))
             {
                 var arbg = BitConverter.ToInt32(bytes, 0);
                 var color = Color.FromArgb(arbg);
                 return color;
             }
 
-            throw new NotSupportedException($"未实现类型[{objType.FullName}]的序列化实现。");
+            throw new NotSupportedException($"未实现类型[{realType.FullName}]的序列化实现。");
         }
 
-        protected override byte[] ConvertValueToBytes(object value)
+        public override byte[] ConvertValueToBytes(object value)
         {
 
             if (value is Point p)

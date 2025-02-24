@@ -9,10 +9,10 @@ namespace ApeFree.Protocols.Json.Jbin
     /// <summary>
     /// 基元类型数组转换器
     /// </summary>
-    public class JbinPrimitiveArrayConverter : JbinConverter<Array>
+    public class JbinPrimitiveArrayConverter : JbinSerializer<Array>, IJbinFieldDeserializer
     {
         /// <inheritdoc/>
-        public override bool CanConvert(Type objectType)
+        public override bool CanSerialize(Type objectType)
         {
             if (!objectType.IsArray)
             {
@@ -34,10 +34,32 @@ namespace ApeFree.Protocols.Json.Jbin
             return true;
         }
 
-        /// <inheritdoc/>
-        protected override Array ConvertBytesToValue(byte[] bytes, Type objType)
+        public bool CanDeserialize(Type defineType, Type realType)
         {
-            var elementType = objType.GetElementType();
+            if (!realType.IsArray)
+            {
+                return false;
+            }
+
+            var elementType = realType.GetElementType();
+
+            if (!elementType.IsPrimitive)
+            {
+                return false;
+            }
+
+            if (elementType == typeof(byte))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
+        {
+            var elementType = realType.GetElementType();
 
             if (elementType == typeof(byte))
             {
@@ -51,7 +73,7 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         /// <inheritdoc/>
-        protected override byte[] ConvertValueToBytes(Array value)
+        public override byte[] ConvertValueToBytes(object value)
         {
             if (value is byte[] data)
             {
@@ -59,7 +81,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             else
             {
-                var bytes = ConvertArrayToBytes(value);
+                var bytes = ConvertArrayToBytes((Array)value);
                 return bytes;
             }
         }
