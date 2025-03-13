@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,23 +9,20 @@ namespace ApeFree.Protocols.Json.Jbin
 {
     public class TypeExtensions
     {
-        private static readonly Lazy<Dictionary<string, Type>> KnownTypes = new Lazy<Dictionary<string, Type>>();
+        private static readonly ConcurrentDictionary<string, Type> KnownTypes = new ConcurrentDictionary<string, Type>();
 
         public static Type GetType(string typeFullName)
         {
-            return ParseType(typeFullName);
+            var type = KnownTypes.GetOrAdd(typeFullName, ParseType(typeFullName));
+            return type;
         }
+
         public static Type ParseType(string typeName)
         {
-            if (KnownTypes.Value.TryGetValue(typeName, out Type type))
-            {
-                return type;
-            }
-
             // 预处理外层方括号
             var trimmed = typeName.Trim();
             if (trimmed.StartsWith("[") && trimmed.EndsWith("]"))
-                return ParseType(trimmed.Substring(1, trimmed.Length - 2));
+                return GetType(trimmed.Substring(1, trimmed.Length - 2));
 
             // 分离程序集信息和类型定义
             var tuple = SplitFullyQualifiedTypeName(trimmed);
@@ -35,7 +33,7 @@ namespace ApeFree.Protocols.Json.Jbin
             // 缓存类型
             if (result != null)
             {
-                KnownTypes.Value[typeName] = result;
+                KnownTypes[typeName] = result;
             }
 
             return result;
@@ -146,7 +144,7 @@ namespace ApeFree.Protocols.Json.Jbin
                 typeStringList.Add(current.ToString());
             }
 
-            var types = typeStringList.Select(ParseType).ToArray();
+            var types = typeStringList.Select(GetType).ToArray();
 
             return types;
         }
