@@ -1,9 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime;
 using System.Security.Cryptography.X509Certificates;
 
@@ -13,17 +16,19 @@ namespace ApeFree.Protocols.Json.Jbin
     {
         public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings()
         {
-            TypeNameHandling = TypeNameHandling.All,
+            TypeNameHandling = TypeNameHandling.Auto,
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            ContractResolver = new CachedContractResolver(),
+            TraceWriter = null,
 
             Converters = new List<JsonConverter>
             {
                 new JbinDeserializer(),
                 new JbinGenericArrayConverter(),
                 new JbinBytesConverter(),
-                //new JbinGenericStructConverter(),
+                new JbinGenericStructConverter(),
                 new JbinStringDictArrayConverter(),
                 new JbinPrimitiveArrayConverter(),
                 //new JbinStringConverter(),
@@ -210,6 +215,17 @@ namespace ApeFree.Protocols.Json.Jbin
 
                 return jbin;
             }
+        }
+    }
+
+    internal class CachedContractResolver : DefaultContractResolver
+    {
+        private readonly ConcurrentDictionary<Type, JsonContract> _cache = new();
+
+        protected override JsonContract CreateContract(Type type)
+        {
+            // 先查缓存，没有再生成
+            return _cache.GetOrAdd(type, base.CreateContract);
         }
     }
 }
