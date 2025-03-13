@@ -43,6 +43,14 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <param name="value"></param>
         /// <returns></returns>
         byte[] ConvertValueToBytes(object value);
+
+        /// <summary>
+        /// 对象转换为字节数组的实现
+        /// </summary>
+        /// <param name="type">指定待序列化对象的类型</param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        byte[] ConvertValueToBytes(Type type, object value);
     }
 
     /// <summary>
@@ -62,5 +70,6 @@ namespace ApeFree.Protocols.Json.Jbin
         public abstract object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType);
 
         public abstract byte[] ConvertValueToBytes(object value);
+        public abstract byte[] ConvertValueToBytes(Type type, object value);
     }
 }

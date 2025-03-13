@@ -184,5 +184,10 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             return buffer;
         }
+
+        public override byte[] ConvertValueToBytes(Type type, object value)
+        {
+            return ConvertValueToBytes(value.GetType(), value);
+        }
     }
 }

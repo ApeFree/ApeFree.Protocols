@@ -84,11 +84,12 @@ namespace ApeFree.Protocols.Json.Jbin
                     else
                     {
                         // 无对应的序列化器还原
+                        return null;
                     }
                 }
                 else
                 {
-
+                    return null;
                 }
             }
             else
@@ -109,16 +110,10 @@ namespace ApeFree.Protocols.Json.Jbin
                 if (typeInfo == null)
                 {
                     targetType = defineType;
-                    // throw new JsonSerializationException("缺少类型信息。");
                 }
                 else
                 {
-                    targetType = Type.GetType(typeInfo);
-
-                    if (targetType == null)
-                    {
-                        targetType = TypeExtensions.ParseType(typeInfo);
-                    }
+                    targetType = TypeExtensions.GetType(typeInfo);
 
                     if (targetType == null)
                     {

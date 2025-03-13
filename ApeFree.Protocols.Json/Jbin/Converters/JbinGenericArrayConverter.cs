@@ -74,6 +74,8 @@ namespace ApeFree.Protocols.Json.Jbin
 
         public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
         {
+            Dictionary<Type, IJbinFieldConverter> dictConverter = new Dictionary<Type, IJbinFieldConverter>();
+
             var elementType = GetElementType(realType);
 
             object group = CreateList(elementType);
@@ -95,8 +97,13 @@ namespace ApeFree.Protocols.Json.Jbin
                         {
                             var block = br.ReadBytes(blockLen);
 
-                            // 选择一个转换器
-                            var converter = Converters.First(x => x.CanDeserialize(elementType, elementType));
+                            IJbinFieldConverter converter;
+                            if (!dictConverter.TryGetValue(elementType, out converter))
+                            {
+                                converter = Converters.First(x => x.CanDeserialize(elementType, elementType));
+                                dictConverter[elementType] = converter;
+                            }
+
                             var item = converter.ConvertBytesToValue(block, elementType, elementType);
                             AddDataToList(group, item);
                         }
@@ -117,6 +124,12 @@ namespace ApeFree.Protocols.Json.Jbin
         public override byte[] ConvertValueToBytes(object value)
         {
             var type = value.GetType();
+            return ConvertValueToBytes(type, value);
+        }
+
+        public override byte[] ConvertValueToBytes(Type type, object value)
+        {
+            Dictionary<Type, IJbinFieldConverter> dictConverter = new Dictionary<Type, IJbinFieldConverter>();
             Type elementType;
             var group = new List<object>();
             if (type.IsArray)
@@ -156,7 +169,13 @@ namespace ApeFree.Protocols.Json.Jbin
                         else
                         {
                             // 选择一个转换器
-                            var converter = Converters.First(x => x.CanSerialize(elementType));
+                            IJbinFieldConverter converter;
+                            if (!dictConverter.TryGetValue(elementType, out converter))
+                            {
+                                converter = Converters.First(x => x.CanSerialize(elementType));
+                                dictConverter[elementType] = converter;
+                            }
+                          
                             var data = converter.ConvertValueToBytes(block);
                             bw.Write(data.Length);
                             bw.Write(data);
@@ -212,7 +231,6 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             return null;
         }
-
         #endregion
     }
 }

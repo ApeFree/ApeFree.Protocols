@@ -75,6 +75,12 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <inheritdoc/>
         public override byte[] ConvertValueToBytes(object value)
         {
+            var type = value.GetType();
+            return ConvertValueToBytes(type, value);
+        }
+
+        public override byte[] ConvertValueToBytes(Type type, object value)
+        {
             if (value is byte[] data)
             {
                 return data;
@@ -85,6 +91,7 @@ namespace ApeFree.Protocols.Json.Jbin
                 return bytes;
             }
         }
+
 
         /// <summary>
         /// 将基元类型的数组转为字节数组
@@ -115,5 +122,6 @@ namespace ApeFree.Protocols.Json.Jbin
             Buffer.BlockCopy(bytes, 0, array, 0, bytes.Length);
             return array;
         }
+
     }
 }

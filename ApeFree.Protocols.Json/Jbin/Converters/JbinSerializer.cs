@@ -115,5 +115,6 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         public abstract byte[] ConvertValueToBytes(object value);
+        public abstract byte[] ConvertValueToBytes(Type type, object value);
     }
 }

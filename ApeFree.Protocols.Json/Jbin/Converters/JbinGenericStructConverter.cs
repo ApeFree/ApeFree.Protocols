@@ -65,54 +65,62 @@ namespace ApeFree.Protocols.Json.Jbin
 
         public override byte[] ConvertValueToBytes(object value)
         {
+            var type = value.GetType();
 
-            if (value is Point p)
-            {
-                byte[] bytes = new byte[8];
-                var x = BitConverter.GetBytes(p.X);
-                var y = BitConverter.GetBytes(p.Y);
-                Array.Copy(x, 0, bytes, 0, 4);
-                Array.Copy(y, 0, bytes, 4, 4);
-                return bytes;
-            }
-
-            if (value is PointF pf)
-            {
-                byte[] bytes = new byte[8];
-                var x = BitConverter.GetBytes(pf.X);
-                var y = BitConverter.GetBytes(pf.Y);
-                Array.Copy(x, 0, bytes, 0, 4);
-                Array.Copy(y, 0, bytes, 4, 4);
-                return bytes;
-            }
-
-            if (value is Size s)
-            {
-                byte[] bytes = new byte[8];
-                var w = BitConverter.GetBytes(s.Width);
-                var h = BitConverter.GetBytes(s.Height);
-                Array.Copy(w, 0, bytes, 0, 4);
-                Array.Copy(h, 0, bytes, 4, 4);
-                return bytes;
-            }
-
-            if (value is SizeF sf)
-            {
-                byte[] bytes = new byte[8];
-                var w = BitConverter.GetBytes(sf.Width);
-                var h = BitConverter.GetBytes(sf.Height);
-                Array.Copy(w, 0, bytes, 0, 4);
-                Array.Copy(h, 0, bytes, 4, 4);
-                return bytes;
-            }
-
-            if (value is Color color)
-            {
-                var arbg = BitConverter.GetBytes(color.ToArgb());
-                return arbg;
-            }
-
-            throw new NotSupportedException($"未实现类型[{value.GetType().FullName}]的序列化实现。");
+            return ConvertValueToBytes(type, value);
         }
+
+        public override byte[] ConvertValueToBytes(Type type, object value)
+        {
+            // 预定义的序列化处理映射
+            if (_serializers.TryGetValue(type, out var serializer))
+            {
+                return serializer(value);
+            }
+
+            throw new NotSupportedException($"未实现类型[{type.FullName}]的序列化实现。");
+        }
+
+        private static readonly Dictionary<Type, Func<object, byte[]>> _serializers = new()
+        {
+            [typeof(Point)] = obj =>
+            {
+                var p = (Point)obj;
+                byte[] bytes = new byte[8];
+                Buffer.BlockCopy(BitConverter.GetBytes(p.X), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(p.Y), 0, bytes, 4, 4);
+                return bytes;
+            },
+
+            [typeof(PointF)] = obj =>
+            {
+                var p = (PointF)obj;
+                byte[] bytes = new byte[8];
+                Buffer.BlockCopy(BitConverter.GetBytes(p.X), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(p.Y), 0, bytes, 4, 4);
+                return bytes;
+            },
+
+            [typeof(Size)] = obj =>
+            {
+                var s = (Size)obj;
+                byte[] bytes = new byte[8];
+                Buffer.BlockCopy(BitConverter.GetBytes(s.Width), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(s.Height), 0, bytes, 4, 4);
+                return bytes;
+            },
+
+            [typeof(SizeF)] = obj =>
+            {
+                var s = (SizeF)obj;
+                byte[] bytes = new byte[8];
+                Buffer.BlockCopy(BitConverter.GetBytes(s.Width), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(s.Height), 0, bytes, 4, 4);
+                return bytes;
+            },
+
+            [typeof(Color)] = obj =>
+                BitConverter.GetBytes(((Color)obj).ToArgb())
+        };
     }
 }
