@@ -27,7 +27,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="STTech.CodePlus" Version="1.7.2.4" />
+		<PackageReference Include="STTech.CodePlus" Version="1.7.2.6" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
