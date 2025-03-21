@@ -39,7 +39,7 @@ namespace ApeFree.Protocols.Json.Tests
                 Des = "parent node",
                 Location = new Point(100, 200),
                 Size = Enumerable.Range(999999, 3).Select(x => new SizeF((float)(x * Math.PI), 9999.99999f)).ToArray(),
-                Data1 = Enumerable.Range(0, 100).Select(x => (byte)x).ToArray(),
+                Data1 = Enumerable.Range(0, 1024*64).Select(x => (byte)x).ToArray(),
                 Data2 = Enumerable.Range(0, 100).Select(x => (int)x).ToArray(),
                 Data3 = Enumerable.Range(0, 100).Select(x => (short)x).ToArray(),
                 Child = new List<MyData>(),
@@ -62,9 +62,17 @@ namespace ApeFree.Protocols.Json.Tests
             return obj;
         }
 
-        public static MyData TestObject = CreateTestObject();
-        public static byte[] TestObjectBytes = JbinObject.FromObject(TestObject).ToBytes();
-        public static string TestObjectJson = JsonConvert.SerializeObject(TestObject, Formatting.Indented, SerializerSettings);
+        [TestInitialize]
+        public void InitTestData()
+        {
+            TestObject = CreateTestObject();
+            TestObjectBytes = JbinObject.FromObject(TestObject).ToBytes();
+            TestObjectJson = JsonConvert.SerializeObject(TestObject, Formatting.Indented, SerializerSettings);
+        }
+
+        public static MyData TestObject;
+        public static byte[] TestObjectBytes;
+        public static string TestObjectJson;
 
         public static JsonSerializerSettings SerializerSettings => new JsonSerializerSettings()
         {
