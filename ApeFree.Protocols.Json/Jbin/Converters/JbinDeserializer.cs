@@ -69,7 +69,11 @@ namespace ApeFree.Protocols.Json.Jbin
                 if (typeId < DataTypes.Count && blockId < DataBlocks.Count)
                 {
                     var realType = DataTypes[typeId];
-                    byte[] bytes = DataBlocks[blockId];
+                    //var block = DataBlocks[blockId];
+                    //byte[] bytes = new byte[block.Length];
+                    //block.CopyTo(bytes, 0);
+                    var bytes = DataBlocks[blockId];
+
 
                     // 寻找匹配的序列化器
                     // 这里可以使用缓存优化查找速度

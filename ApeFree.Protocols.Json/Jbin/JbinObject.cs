@@ -12,8 +12,10 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
-    public class JbinObject
+    public class JbinObject : IDisposable
     {
+        private bool disposedValue;
+
         public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Auto,
@@ -41,7 +43,7 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <summary>
         /// 数据块列表
         /// </summary>
-        public List<byte[]> DataBlocks { get; }
+        public List<byte[]> DataBlocks { get; private set; }
 
         public JbinHeader Header { get; }
 
@@ -67,41 +69,32 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <returns></returns>
         public byte[] ToBytes()
         {
-            var lst = new List<byte[]>();
+            var headerSize = (DataBlocks.Count + 1) * sizeof(uint);
+            var blockSize = DataBlocks.Sum(x => x.Length);
 
-            // 数据块个数
-            var blockCount = BitConverter.GetBytes(DataBlocks.Count);
-            lst.Add(blockCount);
+            byte[] bytes = new byte[headerSize + blockSize];
 
-            // 每个数据块的大小
-            var blockSizeArray = DataBlocks.Select(b => BitConverter.GetBytes((uint)b.Length)).ToArray();
-            lst.AddRange(blockSizeArray);
+            int offset = 0;
 
-            // 每个数据块的内容
-            lst.AddRange(DataBlocks);
+            // 将数据块的个数拷贝到bytes中
+            BitConverter.GetBytes((uint)DataBlocks.Count).CopyTo(bytes, offset);
+            offset += sizeof(uint);
 
-            // 最终的Jbin数据
-            var bytes = ConcatByteArrays(lst);
+            // 将所有数据块的长度拷贝到bytes中
+            foreach (var block in DataBlocks)
+            {
+                BitConverter.GetBytes((uint)block.Length).CopyTo(bytes, offset);
+                offset += sizeof(uint);
+            }
+
+            // 拷贝数据块内容
+            foreach (var block in DataBlocks)
+            {
+                block.CopyTo(bytes, offset);
+                offset += block.Length;
+            }
 
             return bytes;
-        }
-
-        /// <summary>
-        /// 将多个字节数组合并到一起
-        /// </summary>
-        /// <param name="byteArrays"></param>
-        /// <returns></returns>
-        public static byte[] ConcatByteArrays(IEnumerable<byte[]> byteArrays)
-        {
-            int totalLength = byteArrays.Sum(arr => arr.Length);
-            byte[] result = new byte[totalLength];
-            int offset = 0;
-            foreach (var byteArray in byteArrays)
-            {
-                Array.Copy(byteArray, 0, result, offset, byteArray.Length);
-                offset += byteArray.Length;
-            }
-            return result;
         }
 
         /// <summary>
@@ -110,6 +103,18 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public T ToObject<T>(JsonSerializerSettings settings = null)
+        {
+            // 反序列化到对象
+            var obj = (T)ToObject(typeof(T), settings);
+            return obj;
+        }
+
+        /// <summary>
+        /// 反序列化
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public object ToObject(Type type, JsonSerializerSettings settings = null)
         {
             // 在序列化配置中添加转换器
             if (settings == null)
@@ -130,7 +135,7 @@ namespace ApeFree.Protocols.Json.Jbin
             });
 
             // 反序列化到对象
-            var obj = JsonConvert.DeserializeObject<T>(Json, settings);
+            var obj = JsonConvert.DeserializeObject(Json, type, settings);
 
             return obj;
         }
@@ -215,6 +220,27 @@ namespace ApeFree.Protocols.Json.Jbin
 
                 return jbin;
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    DataBlocks?.Clear();
+                }
+
+                DataBlocks = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 
