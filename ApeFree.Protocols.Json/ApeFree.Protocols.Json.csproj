@@ -24,11 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="..\..\ApeFree.ApeForms\ApeFree_64px.png" Link="ApeFree_64px.png">
-	    <PackagePath>\</PackagePath>
-	    <Pack>True</Pack>
-	  </None>
-	  <None Include="..\..\STTech.CodePlus\README.md" Link="README.md">
+	  <None Include="ApeFree_64px.png">
 	    <PackagePath>\</PackagePath>
 	    <Pack>True</Pack>
 	  </None>
