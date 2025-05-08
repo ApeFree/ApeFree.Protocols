@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.0.2.5-alpha0321</Version>
+		<Version>0.0.2.6-alpha0508</Version>
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Company>ApeFree</Company>
@@ -32,7 +32,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="STTech.CodePlus" Version="1.7.2.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj" />
 	</ItemGroup>
 
 </Project>

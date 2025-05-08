@@ -9,6 +9,14 @@ namespace ApeFree.Protocols.Json.Jbin
     public class JbinDeserializer : JbinConverter
     {
         private static readonly Type LongType = typeof(long);
+        private static readonly Type FloatType = typeof(float);
+
+        // 所有在Json会被存成Long的整数值类型
+        private static readonly Type[] numericTypes = new[]
+        {
+            typeof(sbyte), typeof(byte), typeof(short), typeof(ushort),
+            typeof(int), typeof(uint), typeof(long), typeof(ulong)
+        };
 
         public List<IJbinFieldDeserializer> Serializers { get; set; }
 
@@ -52,10 +60,42 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <inheritdoc/>
         public override object ReadJson(JsonReader reader, Type defineType, object existingValue, JsonSerializer serializer)
         {
-            // 如果字段的定义是长整型，则直接返回数值
-            if (defineType == typeof(long) && reader.Value is long num)
+            if (defineType.IsValueType)
             {
-                return num;
+                // 如果字段的定义是整数的数值类型，并且改节点的值类型是Long，则直接强转并返回数值
+                if (reader.Value is long numLong)
+                {
+                    if (numericTypes.Contains(defineType))
+                    {
+                        return Convert.ChangeType(numLong, defineType);
+                    }
+                    else
+                    {
+                        // 此时的numLong应该是一个拼接数，指向一个数据块
+                        // 这里不做处理
+                    }
+                }
+                // 单精度浮点数和双精度浮点数在解析时会被转换成double类型，所以需要进行判断
+                else if (reader.Value is double numDouble)
+                {
+                    if (defineType == FloatType)
+                    {
+                        return Convert.ChangeType(numDouble, FloatType);
+                    }
+                    else
+                    {
+                        return numDouble;
+                    }
+                }
+                // 其他的值类型（boolean、char）
+                else if (reader.Value.GetType() == defineType)
+                {
+                    return reader.Value;
+                }
+                else
+                {
+                    // 其他情况
+                }
             }
 
             // 判断long类型的数值是否符合拼接数的特征
