@@ -3,31 +3,35 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
-		<Version>0.0.2.5-alpha0321</Version>
 
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Company>ApeFree</Company>
+		<Title>ApeFree.Protocols</Title>
+		<Product>ApeFree.Protocols.Json</Product>
+		<Version>0.0.2.6</Version>
 		<Authors>Guijie Lee</Authors>
-		<Copyright>Copyright © 2019-2025 ApeFree, All Rights Reserved.</Copyright>
-		<Description>JsonRpc协议库。</Description>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Company>ApeFree</Company>
+		<Copyright>Copyright © 2022-2025 ApeFree, All Rights Reserved.</Copyright>
+		<Description>Serialization tools for JSON - related protocols (or data formats) (such as JsonRPC, Jbin, JbinRPC, etc.)</Description>
+
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<RepositoryUrl>https://github.com/ApeFree</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>ApeFree_64px.png</PackageIcon>
+
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Jbin\JbinBitmapConverter.cs" />
+		<Compile Remove="Jbin\JbinBitmapConverter.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="ApeFree_64px.png">
-	    <PackagePath>\</PackagePath>
-	    <Pack>True</Pack>
-	  </None>
+		<None Include="..\ApeFree_64px.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,7 +39,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj" />
+		<ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj" />
 	</ItemGroup>
 
 </Project>
