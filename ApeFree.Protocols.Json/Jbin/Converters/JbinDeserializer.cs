@@ -52,11 +52,20 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <inheritdoc/>
         public override object ReadJson(JsonReader reader, Type defineType, object existingValue, JsonSerializer serializer)
         {
-            // 如果字段的定义是长整型，则直接返回数值
-            if (defineType == typeof(long) && reader.Value is long num)
+            // 如果定义类型是基元类型，直接转换并返回
+            if (defineType.IsPrimitive)
             {
-                return num;
+                var value = Convert.ChangeType(reader.Value, defineType);
+                return value;
             }
+
+            // 如果字段的定义是枚举类型，则直接转换并返回枚举值
+            if (defineType.IsEnum)
+            {
+                var value= Enum.ToObject(defineType, reader.Value);
+                return value;
+            }
+
 
             // 判断long类型的数值是否符合拼接数的特征
             if (reader.Value is long id && ((id >> 63) & 1) != 0 && ((id >> 31) & 1) != 0)
