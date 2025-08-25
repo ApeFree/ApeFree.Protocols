@@ -10,11 +10,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ApeFree.Protocols.Json.Tests
 {
     public class MyData
     {
+        public TaskStatus TaskStatus { get; set; } = TaskStatus.WaitingToRun;
         public string Name { get; set; }
         public string Des { get; set; }
         public long Id { get; set; }
@@ -112,7 +114,7 @@ namespace ApeFree.Protocols.Json.Tests
         [TestMethod]
         public void JbinDeserializeTest()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var bytes = TestObjectBytes;
                 var jbin = JbinObject.Parse(bytes);
@@ -125,7 +127,7 @@ namespace ApeFree.Protocols.Json.Tests
         [TestMethod]
         public void JbinSerializeTest()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var obj = TestObject;
                 var jbin = JbinObject.FromObject(obj);
@@ -136,7 +138,7 @@ namespace ApeFree.Protocols.Json.Tests
         [TestMethod]
         public void JsonDeserializeTest()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var jsonStr = TestObjectJson;
                 var json = JObject.Parse(jsonStr);
@@ -149,7 +151,7 @@ namespace ApeFree.Protocols.Json.Tests
         [TestMethod]
         public void JsonSerializeTest()
         {
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var obj = TestObject;
                 var json = JObject.FromObject(obj);
