@@ -1,51 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-<PropertyGroup>
-	<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
-	<LangVersion>latest</LangVersion>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
 
-	<Title>ApeFree.Protocols</Title>
-	<Product>ApeFree.Protocols.Json</Product>
-	<Version>0.0.2.8</Version>
-	<Authors>Guijie Lee</Authors>
-	<Company>ApeFree</Company>
-	<Copyright>Copyright © 2022-2025 ApeFree, All Rights Reserved.</Copyright>
-	<Description>Serialization tools for JSON - related protocols (or data formats) (such as JsonRPC, Jbin, JbinRPC, etc.)</Description>
+		<Title>ApeFree.Protocols</Title>
+		<Product>ApeFree.Protocols.Json</Product>
+		<Version>0.0.2.9</Version>
+		<Authors>Guijie Lee</Authors>
+		<Company>ApeFree</Company>
+		<Copyright>Copyright © 2022-2025 ApeFree, All Rights Reserved.</Copyright>
+		<Description>Serialization tools for JSON - related protocols (or data formats) (such as JsonRPC, Jbin, JbinRPC, etc.)</Description>
 
-	<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-	<RepositoryUrl>https://github.com/ApeFree</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
-	<PackageIcon>ApeFree_64px.png</PackageIcon>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<RepositoryUrl>https://github.com/ApeFree</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageIcon>ApeFree_64px.png</PackageIcon>
 
-	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<GenerateDocumentationFile>True</GenerateDocumentationFile>
-	<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
 
-	<PackageReleaseNotes>
-		修复了Jbin反序列化时不支持枚举类型属性值的问题。
-		Fixed the issue where Jbin deserialization did not support enum type property values.
-	</PackageReleaseNotes>
-	
-</PropertyGroup>
+		<PackageReleaseNotes>
+			
+		</PackageReleaseNotes>
 
-<ItemGroup>
-	<Compile Remove="Jbin\JbinBitmapConverter.cs" />
-</ItemGroup>
+	</PropertyGroup>
 
-<ItemGroup>
-	<None Include="..\ApeFree_64px.png">
-		<Pack>True</Pack>
-		<PackagePath>\</PackagePath>
-	</None>
-</ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Jbin\JbinBitmapConverter.cs" />
+	</ItemGroup>
 
-<ItemGroup>
-	<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-</ItemGroup>
+	<ItemGroup>
+		<None Include="..\ApeFree_64px.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-<ItemGroup>
-	<ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj" />
-</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj" />
+	</ItemGroup>
 
 </Project>

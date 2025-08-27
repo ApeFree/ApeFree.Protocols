@@ -69,8 +69,13 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <returns></returns>
         public byte[] ToBytes()
         {
-            var headerSize = (DataBlocks.Count + 1) * sizeof(uint);
-            var blockSize = DataBlocks.Sum(x => x.Length);
+            var headerSize = (uint)(DataBlocks.Count + 1) * sizeof(uint);
+            ulong blockSize = 0;
+
+            foreach (var block in DataBlocks)
+            {
+                blockSize += (uint)block.Length;
+            }
 
             byte[] bytes = new byte[headerSize + blockSize];
 
@@ -95,6 +100,34 @@ namespace ApeFree.Protocols.Json.Jbin
             }
 
             return bytes;
+        }
+
+        /// <summary>
+        /// 序列化对象到流
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void WriteTo(Stream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream), "Stream cannot be null.");
+            }
+
+            // 将数据块的个数写入到 stream
+            stream.Write(BitConverter.GetBytes((uint)DataBlocks.Count), 0, 4);
+
+            // 将所有数据块的长度写入到 stream
+            foreach (var block in DataBlocks)
+            {
+                stream.Write(BitConverter.GetBytes((uint)block.Length), 0, 4);
+            }
+
+            // 拷贝数据块内容
+            foreach (var block in DataBlocks)
+            {
+                stream.Write(block, 0, block.Length);
+            }
         }
 
         /// <summary>
