@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using STTech.CodePlus.Utils;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
@@ -168,7 +169,7 @@ namespace ApeFree.Protocols.Json.Jbin
                 }
                 else
                 {
-                    targetType = TypeExtensions.GetType(typeInfo);
+                    targetType = TypeParser.GetType(typeInfo);
 
                     if (targetType == null)
                     {

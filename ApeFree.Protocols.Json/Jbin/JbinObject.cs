@@ -12,10 +12,16 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
+    /// <summary>
+    /// Jbin对象
+    /// </summary>
     public class JbinObject : IDisposable
     {
         private bool disposedValue;
 
+        /// <summary>
+        /// 默认的Json序列化配置
+        /// </summary>
         public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Auto,
@@ -45,6 +51,9 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         public List<byte[]> DataBlocks { get; private set; }
 
+        /// <summary>
+        /// Jbin数据头部
+        /// </summary>
         public JbinHeader Header { get; }
 
         /// <summary>
@@ -66,7 +75,6 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <summary>
         /// 序列化对象
         /// </summary>
-        /// <returns></returns>
         public byte[] ToBytes()
         {
             var headerSize = (uint)(DataBlocks.Count + 1) * sizeof(uint);
