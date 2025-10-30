@@ -49,9 +49,6 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="STTech.CodePlus, Version=1.7.3.2, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\STTech.CodePlus.1.7.3.2\lib\net45\STTech.CodePlus.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -60,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeepCopyTests.cs" />
     <Compile Include="JbinBigDataTest.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -79,6 +77,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj">
+      <Project>{e0857c3f-7310-4996-bb13-e2bd7808cc57}</Project>
+      <Name>STTech.CodePlus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ApeFree.Protocols.Json\ApeFree.Protocols.Json.csproj">
       <Project>{b2c179b8-3df6-473e-a971-0350d07ce342}</Project>
       <Name>ApeFree.Protocols.Json</Name>

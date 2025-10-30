@@ -27,6 +27,8 @@ namespace ApeFree.Protocols.Json.Tests
         public short[] Data3 { get; set; }
         public Bitmap Photo { get; set; }
         public List<MyData> Child { get; set; }
+        // public Action<string> TestAction { get; set; }
+        // public Func<string> TestFunc { get; set; }
     }
 
 
@@ -41,11 +43,13 @@ namespace ApeFree.Protocols.Json.Tests
                 Des = "parent node",
                 Location = new Point(100, 200),
                 Size = Enumerable.Range(999999, 3).Select(x => new SizeF((float)(x * Math.PI), 9999.99999f)).ToArray(),
-                Data1 = Enumerable.Range(0, 1024*64).Select(x => (byte)x).ToArray(),
+                Data1 = Enumerable.Range(0, 1024 * 64).Select(x => (byte)x).ToArray(),
                 Data2 = Enumerable.Range(0, 100).Select(x => (int)x).ToArray(),
                 Data3 = Enumerable.Range(0, 100).Select(x => (short)x).ToArray(),
                 Child = new List<MyData>(),
                 Id = (((long)(999 | (1 << 31))) << 32) | ((long)(888 | (1 << 31))),
+                // TestAction = (str) => { Console.WriteLine(str); },
+                // TestFunc = () => { return "Hello World"; },
             };
 
             //var childObj = new MyData()
