@@ -132,7 +132,6 @@ namespace ApeFree.Protocols.Json.Jbin.Extensions
         #endregion
     }
 
-
     public static class ObjectUtils
     {
         /// <summary>
@@ -212,7 +211,7 @@ namespace ApeFree.Protocols.Json.Jbin.Extensions
             //    }
             //}
 
-            JbinObject jbin = JbinObject.FromObject(obj);
+            var jbin = JbinObject.FromObject(obj);
             var copy = jbin.ToObject(type);
 
             return copy;
