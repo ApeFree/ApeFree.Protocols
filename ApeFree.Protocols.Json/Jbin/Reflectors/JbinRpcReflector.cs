@@ -3,6 +3,7 @@ using ApeFree.Protocols.Json.JsonRpc;
 using ApeFree.Protocols.Json.JsonRpc.Reflectors;
 using STTech.CodePlus.Components;
 using System;
+using System.Diagnostics;
 
 namespace ApeFree.Protocols.Json.Jbin.Reflectors
 {
@@ -20,8 +21,12 @@ namespace ApeFree.Protocols.Json.Jbin.Reflectors
             // 由 Jbin 对象反序列化为JsonRpc请求对象
             var req = jbinReq.ToObject<JsonRpcRequest>();
 
+            //Debug.WriteLine($"○ 已接收到调用请求 {req.Id}");
+
             // 执行JsonRpc的反射，得到返回的JsonRpc响应对象
             var resp = JsonRpcReflector.ReflectInvokeMethod(reflectObject, req);
+
+            //Debug.WriteLine($"○ 完成远程调用处理 {req.Id}");
 
             // 将JsonRpc响应对象序列化成为 Jbin 对象
             var jbinResp = JbinObject.FromObject(resp);

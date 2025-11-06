@@ -24,7 +24,7 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings()
         {
-            TypeNameHandling = TypeNameHandling.Auto,
+            TypeNameHandling = TypeNameHandling.All,
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
