@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -9,6 +9,12 @@ using System.Xml.Linq;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
+    /// <summary>
+    /// 常用结构体转换器 (Point, Size, Color 等)
+    /// <para>1. 本类示范了如何将原本在 JSON 中会展开为多个键值对的“属性对象”压缩成极小的定长二级制序列。</para>
+    /// <para>2. 例如 <c>Point</c> 本来占用 JSON 的 {"X":1,"Y":2} 十几个字符。在本转换器处理下，它仅占用 8 个字节的二进制空间。</para>
+    /// <para>3. 它利用 <see cref="BitConverter"/> 进行精准的字节切分和组装。</para>
+    /// </summary>
     public class JbinGenericStructConverter : JbinSerializer<object>, IJbinFieldConverter
     {
         public readonly static Type[] SupportedTypes = { typeof(Point), typeof(PointF), typeof(Size), typeof(SizeF), typeof(Color) };
@@ -63,12 +69,7 @@ namespace ApeFree.Protocols.Json.Jbin
             throw new NotSupportedException($"未实现类型[{realType.FullName}]的序列化实现。");
         }
 
-        public override byte[] ConvertValueToBytes(object value)
-        {
-            var type = value.GetType();
 
-            return ConvertValueToBytes(type, value);
-        }
 
         public override byte[] ConvertValueToBytes(Type type, object value)
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -7,6 +7,14 @@ using STTech.CodePlus.Utils;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
+    /// <summary>
+    /// Jbin 中央反序列化器 (反序列化路由器)
+    /// <para>【核心逻辑教学】：</para>
+    /// <para>1. 本类不直接处理具体的二进制字节还原，而是作为“路由器”拦截 Newtonsoft.Json 的反序列化过程。</para>
+    /// <para>2. 它在 ReadJson 中检查读到的 long 值是否符合拼接 ID 特征。</para>
+    /// <para>3. 如果是拼接 ID，它会根据存储在其中的 TypeId 和 BlockId 找到真实数据和类型，并委派给 <see cref="FieldDeserializers"/> 中的具体执行者进行还原。</para>
+    /// <para>4. 如果不是拼接 ID，则利用 <see cref="_bypassNextCanConvert"/> 让 Newtonsoft.Json 回到标准的反序列化流程。</para>
+    /// </summary>
     public class JbinDeserializer : JbinConverter
     {
         private static readonly Type LongType = typeof(long);
@@ -22,9 +30,13 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <summary>
         /// 字段反序列化器列表
         /// </summary>
-        public List<IJbinFieldDeserializer> Serializers { get; set; }
+        public List<IJbinFieldDeserializer> FieldDeserializers { get; set; }
 
-        private bool tag = false;
+        /// <summary>
+        /// 标记是否跳过下一次 CanConvert 检查。
+        /// 用于在反序列化普通对象时剥离 JbinDeserializer，以避免引发无限递归。
+        /// </summary>
+        private bool _bypassNextCanConvert = false;
 
         /// <inheritdoc/>
         public override bool CanConvert(Type objectType)
@@ -39,9 +51,10 @@ namespace ApeFree.Protocols.Json.Jbin
                 return true;
             }
 
-            if (tag)
+            // 如果标记了跳过，则放行下一次反序列化委托给 Newtonsoft.Json 默认处理
+            if (_bypassNextCanConvert)
             {
-                tag = false;
+                _bypassNextCanConvert = false;
                 return false;
             }
 
@@ -54,15 +67,20 @@ namespace ApeFree.Protocols.Json.Jbin
         {
             base.OnInitialized();
 
+            // 如果当前处于序列化模式，此路由器不需要工作。
             if (Context.SerializationMode == SerializationMode.Serialize)
             {
                 return;
             }
 
-            Serializers = Context.Settings.Converters.Where(x => x != this && x is IJbinFieldDeserializer).Cast<IJbinFieldDeserializer>().ToList();
+            // 在初始化时，从全局配置中提取出所有实现了 IJbinFieldDeserializer 接口的具体转换器。
+            // 当 ReadJson 识别到拼接 ID 时，会从这个列表中寻找匹配的处理者。
+            FieldDeserializers = Context.Settings.Converters.Where(x => x != this && x is IJbinFieldDeserializer).Cast<IJbinFieldDeserializer>().ToList();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 核心读取逻辑：Jbin 的“反序列化调度中心”。
+        /// </summary>
         public override object ReadJson(JsonReader reader, Type defineType, object existingValue, JsonSerializer serializer)
         {
             if (defineType.IsValueType)
@@ -129,7 +147,7 @@ namespace ApeFree.Protocols.Json.Jbin
 
                     // 寻找匹配的序列化器
                     // 这里可以使用缓存优化查找速度
-                    var js = Serializers.FirstOrDefault(x => x.CanDeserialize(defineType, realType));
+                    var js = FieldDeserializers.FirstOrDefault(x => x.CanDeserialize(defineType, realType));
 
                     if (js != null)
                     {
@@ -150,7 +168,10 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             else
             {
-                tag = true;
+                // 如果发现当前节点并非拼接 ID（例如是一个由 StartObject 引导的普通对象）
+                // 标记在此之后 Newtonsoft.Json 的递归调用跳过 JbinDeserializer 检查
+                // 确保本层对象的反序列化能回归标准路径
+                _bypassNextCanConvert = true;
             }
 
             if (reader.TokenType == JsonToken.StartObject)

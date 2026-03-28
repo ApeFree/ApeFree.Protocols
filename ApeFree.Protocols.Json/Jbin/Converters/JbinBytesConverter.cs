@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -10,6 +10,14 @@ using Newtonsoft.Json.Linq;
 namespace ApeFree.Protocols.Json.Jbin
 {
 
+    /// <summary>
+    /// 字节数组转换器
+    /// <para>【教学说明】：</para>
+    /// <para>1. 本转换器专门处理 <c>byte[]</c> 类型及其常见的容器类型（如 <c>byte[][]</c> 和 <c>List&lt;byte[]&gt;</c>）。</para>
+    /// <para>2. 对于单一的 <c>byte[]</c>，它直接将其作为原始二进制块存储到 Jbin 中，不进行任何额外的包装，性能极高。</para>
+    /// <para>3. 对于字节数组的集合，它采用了自定义的简单协议：[4字节元素个数] + [每个元素的(4字节长度 + 实际二进制内容)]。</para>
+    /// <para>4. 这种模式展示了如何在一个 Jbin 数据块中打包存储多个逻辑独立的二进制片段。</para>
+    /// </summary>
     public class JbinBytesConverter : JbinSerializer<byte[]>, IJbinFieldConverter
     {
         private static readonly Type[] SupportedTypes = new Type[] { typeof(byte[]), typeof(byte[][]), typeof(List<byte[]>) };
@@ -57,43 +65,7 @@ namespace ApeFree.Protocols.Json.Jbin
             return null;
         }
 
-        public override byte[] ConvertValueToBytes(object value)
-        {
-            var type = value.GetType();
 
-            return ConvertValueToBytes(type, value);
-
-            //if (value.GetType() == SupportedTypes[0])
-            //{
-            //    return (byte[])value;
-            //}
-            //else
-            //{
-            //    var group = new List<byte[]>();
-            //    if (value is byte[][] array)
-            //    {
-            //        group = array.ToList();
-            //    }
-            //    else if (value is List<byte[]> list)
-            //    {
-            //        group = list;
-            //    }
-
-            //    using (var ms = new MemoryStream())
-            //    {
-            //        using (BinaryWriter bw = new BinaryWriter(ms))
-            //        {
-            //            bw.Write(group.Count);
-            //            foreach (var block in group)
-            //            {
-            //                bw.Write(block.Length);
-            //                bw.Write(block);
-            //            }
-            //        }
-            //        return ms.ToArray();
-            //    }
-            //}
-        }
 
         public override byte[] ConvertValueToBytes(Type type, object value)
         {

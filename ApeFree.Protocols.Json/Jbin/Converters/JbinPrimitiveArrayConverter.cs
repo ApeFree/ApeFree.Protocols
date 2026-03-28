@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -7,7 +7,13 @@ namespace ApeFree.Protocols.Json.Jbin
     /// <summary>
     /// 基元类型数组转换器
     /// </summary>
-    public class JbinPrimitiveArrayConverter : JbinSerializer<Array>, IJbinFieldDeserializer
+    /// <summary>
+    /// 基元类型数组转换器
+    /// <para>1. 本转换器通过 <see cref="Buffer.BlockCopy"/> 实现超高性能的数值数组转字节序列。</para>
+    /// <para>2. 它直接将内存中数组的原始位拷贝到字节数组中，这种“零编解码”处理极大地提高了存取传感器数据（如 float[] 或 int[]）时的性能。</para>
+    /// <para>3. 它不适用于包含引用类型或复杂嵌套结构的集合，但对于大规模数值序列记录来说是最佳方案。</para>
+    /// </summary>
+    public class JbinPrimitiveArrayConverter : JbinSerializer<Array>, IJbinFieldConverter
     {
         /// <inheritdoc/>
         public override bool CanSerialize(Type objectType)
@@ -71,12 +77,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
         }
 
-        /// <inheritdoc/>
-        public override byte[] ConvertValueToBytes(object value)
-        {
-            var type = value.GetType();
-            return ConvertValueToBytes(type, value);
-        }
+
 
         /// <inheritdoc/>
         public override byte[] ConvertValueToBytes(Type type, object value)

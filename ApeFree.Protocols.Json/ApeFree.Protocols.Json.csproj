@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
@@ -28,9 +28,6 @@
 
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Compile Remove="Jbin\JbinBitmapConverter.cs" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="..\ApeFree_64px.png">

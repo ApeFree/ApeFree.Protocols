@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,6 +10,11 @@ using Newtonsoft.Json.Linq;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
+    /// <summary>
+    /// Jbin 转换器基类
+    /// <para>这是所有 Jbin 转换器的共同父类，继承自 Newtonsoft.Json 的 JsonConverter。</para>
+    /// <para>它通过 <see cref="JbinSerializeContext"/> 为具体的子类提供了对二进制数据块 (DataBlocks) 和类型记录 (DataTypes) 的访问权限。</para>
+    /// </summary>
     public abstract class JbinConverter : JsonConverter
     {
         /// <summary>
@@ -54,21 +59,16 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         protected virtual void OnInitialized() { }
 
-        ///// <summary>
-        ///// 将数据转换为字节数组
-        ///// </summary>
-        ///// <param name="value"></param>
-        ///// <returns></returns>
-        //internal abstract byte[] ConvertObjectToBytes(object value);
 
-        ///// <summary>
-        ///// 将字节数组转换为数据
-        ///// </summary>
-        ///// <param name="bytes"></param>
-        ///// <returns></returns>
-        //internal abstract object ConvertBytesToObject(byte[] bytes, Type defineType, Type realType);
     }
 
+    /// <summary>
+    /// Jbin 序列化器基类 (泛型)
+    /// <para>1. 本类通过重写 WriteJson 拦截了 Newtonsoft.Json 的常规对象序列化。</para>
+    /// <para>2. 具体子类实现 <see cref="ConvertValueToBytes(Type, object)"/> 将对象转换为二进制数据。</para>
+    /// <para>3. 本基类负责将转换后的字节存入 Context 的 DataBlocks，生成一个拼接后的 long ID (Combined ID) 写入 JSON 字符串中。</para>
+    /// </summary>
+    /// <typeparam name="T">要处理的目标数据类型</typeparam>
     public abstract class JbinSerializer<T> : JbinConverter, IJbinFieldSerializer
     {
         public virtual bool CanSerialize(Type objectType)
@@ -114,7 +114,21 @@ namespace ApeFree.Protocols.Json.Jbin
             writer.WriteValue(combinedId);
         }
 
-        public abstract byte[] ConvertValueToBytes(object value);
+        /// <summary>
+        /// 简易序列化入口：将对象转为字节数组。
+        /// <para>子类可根据需要重写，默认会转发给带 Type 参数的版本。</para>
+        /// </summary>
+        public virtual byte[] ConvertValueToBytes(object value)
+        {
+            return ConvertValueToBytes(value.GetType(), value);
+        }
+
+        /// <summary>
+        /// 核心序列化实现：子类在此定义对象转二进制块的逻辑。
+        /// </summary>
+        /// <param name="type">对象的真实运行时类型。</param>
+        /// <param name="value">对象实例。</param>
+        /// <returns>序列化生成的字节数组。</returns>
         public abstract byte[] ConvertValueToBytes(Type type, object value);
     }
 }

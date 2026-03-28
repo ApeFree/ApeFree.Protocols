@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,14 +7,15 @@ using System.Reflection;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
+    /// <summary>
+    /// 泛型数组/列表转换器 (处理可被其它转换器执行的容器)
+    /// <para>1. 当容器中的元素不是简单的基元类型，而也是需要 Jbin 特殊转换的对象时（例如：<c>List&lt;Point&gt;</c> 或 <c>List&lt;byte[]&gt;</c>），本类将被激活。</para>
+    /// <para>2. 它实现了递归转换逻辑：它通过 <see cref="FieldConverters"/> 查找最适合元素类型的具体子转换器。</para>
+    /// <para>3. 每个元素先由其对应的具体转换器转为字节，然后再由本类统一打包，体现了 Jbin 对嵌套数据结构的强大支持。</para>
+    /// </summary>
     public class JbinGenericArrayConverter : JbinSerializer<object>, IJbinFieldConverter
     {
-        private static readonly IJbinFieldConverter[] Converters = new IJbinFieldConverter[]
-        {
-            new JbinGenericArrayConverter(),
-            new JbinBytesConverter(),
-            new JbinGenericStructConverter(),
-        };
+        private IEnumerable<IJbinFieldConverter> FieldConverters => Context?.Settings?.Converters?.OfType<IJbinFieldConverter>() ?? Enumerable.Empty<IJbinFieldConverter>();
 
         public bool CanDeserialize(Type defineType, Type realType)
         {
@@ -26,7 +27,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             else
             {
-                return Converters.Any(x => x.CanDeserialize(elementType, elementType));
+                return FieldConverters.Any(x => x.CanDeserialize(elementType, elementType));
             }
         }
 
@@ -40,7 +41,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             else
             {
-                return Converters.Any(x => x.CanSerialize(elementType));
+                return FieldConverters.Any(x => x.CanSerialize(elementType));
             }
         }
 
@@ -100,7 +101,7 @@ namespace ApeFree.Protocols.Json.Jbin
                             IJbinFieldConverter converter;
                             if (!dictConverter.TryGetValue(elementType, out converter))
                             {
-                                converter = Converters.First(x => x.CanDeserialize(elementType, elementType));
+                                converter = FieldConverters.First(x => x.CanDeserialize(elementType, elementType));
                                 dictConverter[elementType] = converter;
                             }
 
@@ -121,11 +122,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
         }
 
-        public override byte[] ConvertValueToBytes(object value)
-        {
-            var type = value.GetType();
-            return ConvertValueToBytes(type, value);
-        }
+
 
         public override byte[] ConvertValueToBytes(Type type, object value)
         {
@@ -172,7 +169,7 @@ namespace ApeFree.Protocols.Json.Jbin
                             IJbinFieldConverter converter;
                             if (!dictConverter.TryGetValue(elementType, out converter))
                             {
-                                converter = Converters.First(x => x.CanSerialize(elementType));
+                                converter = FieldConverters.First(x => x.CanSerialize(elementType));
                                 dictConverter[elementType] = converter;
                             }
                           
