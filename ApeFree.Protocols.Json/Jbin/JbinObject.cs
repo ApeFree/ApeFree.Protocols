@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -22,7 +22,7 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <summary>
         /// 默认的Json序列化配置
         /// </summary>
-        public static JsonSerializerSettings JsonSerializerSettings => new JsonSerializerSettings()
+        public static JbinSerializerSettings JsonSerializerSettings => new JbinSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.All,
             NullValueHandling = NullValueHandling.Ignore,
@@ -30,6 +30,7 @@ namespace ApeFree.Protocols.Json.Jbin
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             ContractResolver = new CachedContractResolver(),
             TraceWriter = null,
+            ReferenceMergingStrategy = JbinReferenceMergingStrategy.SharedBlock,
 
             Converters = new List<JsonConverter>
             {
@@ -39,10 +40,6 @@ namespace ApeFree.Protocols.Json.Jbin
                 new JbinGenericStructConverter(),
                 new JbinStringDictArrayConverter(),
                 new JbinPrimitiveArrayConverter(),
-                //new JbinStringConverter(),
-                //new JbinBitmapConverter(),
-                //new JbinConcurrentQueueShortsConverter(),
-                //new JbinObjectConverter(),
             },
         };
 
@@ -163,9 +160,14 @@ namespace ApeFree.Protocols.Json.Jbin
                 settings = JsonSerializerSettings;
             }
 
+            // 提取引用合并策略
+            var merging = (settings is JbinSerializerSettings jss)
+                ? jss.ReferenceMergingStrategy
+                : JbinReferenceMergingStrategy.SharedBlock;
+
             var types = Header.Types.ToList();
 
-            var context = new JbinSerializeContext(DataBlocks, types, settings, SerializationMode.Deserialize);
+            var context = new JbinSerializeContext(DataBlocks, types, settings, SerializationMode.Deserialize, merging);
 
             settings.Converters.ForEach(x =>
             {
@@ -194,8 +196,13 @@ namespace ApeFree.Protocols.Json.Jbin
                 settings = JsonSerializerSettings;
             }
 
+            // 提取引用合并策略
+            var merging = (settings is JbinSerializerSettings jss)
+                ? jss.ReferenceMergingStrategy
+                : JbinReferenceMergingStrategy.SharedBlock;
+
             // 构造Jbin序列化上下文
-            var context = new JbinSerializeContext(settings, SerializationMode.Serialize);
+            var context = new JbinSerializeContext(settings, SerializationMode.Serialize, merging);
 
             // 为所有转换器初始化
             settings.Converters.ForEach(x =>

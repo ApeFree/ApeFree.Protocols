@@ -9,7 +9,7 @@ namespace ApeFree.Protocols.Json.Jbin
 {
     /// <summary>
     /// Jbin 中央反序列化器 (反序列化路由器)
-    /// <para>【核心逻辑教学】：</para>
+    /// <para>核心逻辑：</para>
     /// <para>1. 本类不直接处理具体的二进制字节还原，而是作为“路由器”拦截 Newtonsoft.Json 的反序列化过程。</para>
     /// <para>2. 它在 ReadJson 中检查读到的 long 值是否符合拼接 ID 特征。</para>
     /// <para>3. 如果是拼接 ID，它会根据存储在其中的 TypeId 和 BlockId 找到真实数据和类型，并委派给 <see cref="FieldDeserializers"/> 中的具体执行者进行还原。</para>
@@ -138,21 +138,26 @@ namespace ApeFree.Protocols.Json.Jbin
                 // 检查ID是否有效
                 if (typeId < DataTypes.Count && blockId < DataBlocks.Count)
                 {
+                    // 引用合并：检查 BlockId 是否已还原过
+                    if (Context.TryGetCachedObject(blockId, out object cached))
+                    {
+                        return cached;
+                    }
+
                     var realType = DataTypes[typeId];
-                    //var block = DataBlocks[blockId];
-                    //byte[] bytes = new byte[block.Length];
-                    //block.CopyTo(bytes, 0);
                     var bytes = DataBlocks[blockId];
 
-
                     // 寻找匹配的序列化器
-                    // 这里可以使用缓存优化查找速度
                     var js = FieldDeserializers.FirstOrDefault(x => x.CanDeserialize(defineType, realType));
 
                     if (js != null)
                     {
                         // 将数据块还原
                         var value = js.ConvertBytesToValue(bytes, defineType, realType);
+
+                        // 引用合并：缓存已还原的对象
+                        Context.CacheObject(blockId, value);
+
                         return value;
                     }
                     else

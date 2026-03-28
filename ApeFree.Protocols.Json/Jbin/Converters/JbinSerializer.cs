@@ -84,15 +84,7 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <inheritdoc/>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            long blockId = 0;
-
-            var bytes = ConvertValueToBytes((T)value);
-            lock (DataBlocks)
-            {
-                DataBlocks.Add(bytes);
-                blockId = DataBlocks.Count;
-            }
-
+            // ① 解析 TypeId（每次独立计算，因为声明类型可能不同）
             long typeId = 0;
             var valueType = value.GetType();
 
@@ -106,7 +98,30 @@ namespace ApeFree.Protocols.Json.Jbin
                 }
             }
 
-            // 合并数据类型Id和数据块Id为一个long（合并时将这两个数值的最高位设置为1）
+            // ② 检查对象引用是否已序列化过（仅引用类型参与去重）
+            if (Context.TryGetBlockId(value, out int existingBlockId))
+            {
+                // 已有 BlockId，直接复用，跳过序列化
+                long reusedId = (typeId << 32) | (uint)existingBlockId;
+                reusedId |= (long)1 << 31;
+                reusedId |= (long)1 << 63;
+                writer.WriteValue(reusedId);
+                return;
+            }
+
+            // ③ 首次出现：正常序列化
+            int blockId;
+            var bytes = ConvertValueToBytes((T)value);
+            lock (DataBlocks)
+            {
+                DataBlocks.Add(bytes);
+                blockId = DataBlocks.Count;
+            }
+
+            // ④ 注册引用（供后续重复引用查找）
+            Context.RegisterReference(value, blockId);
+
+            // ⑤ 合并数据类型Id和数据块Id为一个long
             long combinedId = (typeId << 32) | (uint)blockId;
             combinedId |= (long)1 << 31;
             combinedId |= (long)1 << 63;

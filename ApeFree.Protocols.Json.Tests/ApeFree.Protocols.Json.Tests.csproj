@@ -82,6 +82,7 @@
     <Compile Include="JbinGenericArrayTests.cs" />
     <Compile Include="JbinGenericStructTests.cs" />
     <Compile Include="JbinPrimitiveArrayTests.cs" />
+    <Compile Include="JbinReferenceMergingTests.cs" />
     <Compile Include="JbinRoundTripTests.cs" />
     <Compile Include="JbinStringDictArrayTests.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
