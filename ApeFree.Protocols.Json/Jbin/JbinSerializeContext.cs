@@ -45,6 +45,11 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         private readonly Dictionary<int, object> _blockIdToObject;
 
+        /// <summary>
+        /// 上下文是否已过期（操作结束后会被标记为过期）
+        /// </summary>
+        public bool IsExpired { get; private set; }
+
         public JbinSerializeContext(JsonSerializerSettings settings, SerializationMode serializationMode)
             : this(settings, serializationMode, JbinReferenceMergingStrategy.SharedBlock)
         {
@@ -84,6 +89,8 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         public bool TryGetBlockId(object obj, out int blockId)
         {
+            if (IsExpired) throw new InvalidOperationException("JbinSerializeContext has expired and cannot be used.");
+
             if (ReferenceMergingStrategy == JbinReferenceMergingStrategy.SharedBlock
                 && obj != null
                 && !obj.GetType().IsValueType)
@@ -99,6 +106,8 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         public void RegisterReference(object obj, int blockId)
         {
+            if (IsExpired) throw new InvalidOperationException("JbinSerializeContext has expired and cannot be used.");
+
             if (ReferenceMergingStrategy == JbinReferenceMergingStrategy.SharedBlock
                 && obj != null
                 && !obj.GetType().IsValueType)
@@ -112,6 +121,8 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         public bool TryGetCachedObject(int blockId, out object obj)
         {
+            if (IsExpired) throw new InvalidOperationException("JbinSerializeContext has expired and cannot be used.");
+
             if (ReferenceMergingStrategy == JbinReferenceMergingStrategy.SharedBlock)
             {
                 return _blockIdToObject.TryGetValue(blockId, out obj);
@@ -125,10 +136,23 @@ namespace ApeFree.Protocols.Json.Jbin
         /// </summary>
         public void CacheObject(int blockId, object obj)
         {
+            if (IsExpired) throw new InvalidOperationException("JbinSerializeContext has expired and cannot be used.");
+
             if (ReferenceMergingStrategy == JbinReferenceMergingStrategy.SharedBlock)
             {
                 _blockIdToObject[blockId] = obj;
             }
+        }
+
+        /// <summary>
+        /// 重置并失效上下文，清空缓存的所有对象引用。
+        /// <para>应在每次序列化或反序列化操作结束后调用，防止内存泄漏并标记该上下文不再可用。</para>
+        /// </summary>
+        internal void Reset()
+        {
+            _referenceToBlockId.Clear();
+            _blockIdToObject.Clear();
+            IsExpired = true;
         }
 
         #endregion

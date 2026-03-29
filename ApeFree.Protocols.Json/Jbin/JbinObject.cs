@@ -177,10 +177,17 @@ namespace ApeFree.Protocols.Json.Jbin
                 }
             });
 
-            // 反序列化到对象
-            var obj = JsonConvert.DeserializeObject(Json, type, settings);
-
-            return obj;
+            try
+            {
+                // 反序列化到对象
+                var obj = JsonConvert.DeserializeObject(Json, type, settings);
+                return obj;
+            }
+            finally
+            {
+                // 清理上下文缓存，防止内存泄漏
+                context.Reset();
+            }
         }
 
         /// <summary>
@@ -213,8 +220,17 @@ namespace ApeFree.Protocols.Json.Jbin
                 }
             });
 
-            // 序列化
-            var jsonStructure = JsonConvert.SerializeObject(obj, Formatting.None, settings);
+            string jsonStructure;
+            try
+            {
+                // 序列化
+                jsonStructure = JsonConvert.SerializeObject(obj, Formatting.None, settings);
+            }
+            finally
+            {
+                // 清理上下文缓存，防止内存泄漏
+                context.Reset();
+            }
 
             // Jbin数据头
             var header = new JbinHeader()
