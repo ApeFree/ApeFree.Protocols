@@ -1,11 +1,9 @@
 ﻿using ApeFree.Protocols.Json.Jbin;
 using ApeFree.Protocols.Json.JsonRpc;
-using ApeFree.Protocols.Json.JsonRpc.Reflectors;
 using STTech.CodePlus.Components;
 using System;
-using System.Diagnostics;
 
-namespace ApeFree.Protocols.Json.Jbin.Reflectors
+namespace ApeFree.Protocols.Json.Reflectors
 {
     /// <summary>
     /// JbinRpc反射器
