@@ -89,14 +89,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\STTech.BytesIO\STTech.BytesIO.Core\STTech.BytesIO.Core.csproj">
-      <Project>{cc38aa6b-f39d-4a2b-ba1f-c78822ced4cc}</Project>
-      <Name>STTech.BytesIO.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\STTech.BytesIO\STTech.BytesIO.Tcp\STTech.BytesIO.Tcp.csproj">
-      <Project>{46edf9f2-1139-449a-8e2b-6065a578667c}</Project>
-      <Name>STTech.BytesIO.Tcp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ApeFree.Protocol.ApeFtp\ApeFree.Protocol.ApeFtp.csproj">
       <Project>{e34785dd-68d7-4a51-993f-ecc7d77b192a}</Project>
       <Name>ApeFree.Protocol.ApeFtp</Name>
