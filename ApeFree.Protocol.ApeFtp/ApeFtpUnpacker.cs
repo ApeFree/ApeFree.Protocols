@@ -2,14 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Buffers;
 
 namespace ApeFree.Protocol.ApeFtp
 {
-    public class ApeFtpUnpacker : Unpacker
+    public class ApeFtpUnpacker : Unpacker<TransferResponse>
     {
-        protected override int CalculatePacketLength(byte[] bytes)
+        protected override int CalculatePacketLength(ReadOnlySequence<byte> buffer)
         {
+            var bytes = buffer.ToArray();
             if (bytes.Length < 23)
             {
                 return 0;
@@ -27,10 +28,19 @@ namespace ApeFree.Protocol.ApeFtp
                 case CommandCode.TransferResponse:
                     return 23 + bytes.ElementAt(22);
                 default:
-                    // TODO:
                     return 0;
             }
+        }
 
+        protected override TransferResponse ResponseSerializeHandler(UnpackContext context)
+        {
+            var bytes = context.Data.ToArray();
+            var code = (CommandCode)bytes.ElementAt(0);
+            if (code == CommandCode.TransferResponse)
+            {
+                return new TransferResponse(bytes);
+            }
+            return null;
         }
     }
 }

@@ -1,33 +1,29 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using STTech.BytesIO.Core;
+using STTech.BytesIO.Core.Component;
+using System;
 
 namespace ApeFree.Protocol.ApeFtp
 {
-    public abstract class ApeFtpClient
+    public abstract class ApeFtpClient : VirtualClient
     {
-        public Action<byte[]> SendBytesHandler { get; set; }
+        /// <summary>
+        /// 解包器
+        /// </summary>
+        public Unpacker<TransferResponse> Unpacker { get; }
 
-        // 解包器
-        protected ApeFtpUnpacker Unpacker { get; set; }
-
-        protected ApeFtpClient(Action<byte[]> sendBytesHandler)
+        protected ApeFtpClient(BytesClient client)
+            : base(client)
         {
-            SendBytesHandler = sendBytesHandler;
-
             Unpacker = new ApeFtpUnpacker();
-            Unpacker.OnDataParsed += Unpacker_OnDataParsed; ;
+            this.BindUnpacker(Unpacker);
+            Unpacker.OnDataParsed += Unpacker_OnDataParsed;
         }
 
-        private void Unpacker_OnDataParsed(object sender, STTech.BytesIO.Core.Component.DataParsedEventArgs e)
+        private void Unpacker_OnDataParsed(object sender, DataParsedEventArgs<TransferResponse> e)
         {
             OnUnpackerDataParsed(sender, e);
         }
 
-        protected abstract void OnUnpackerDataParsed(object sender, STTech.BytesIO.Core.Component.DataParsedEventArgs e);
-
-        public virtual void Input(byte[] data)
-        {
-            Unpacker.Input(data);
-        }
+        protected abstract void OnUnpackerDataParsed(object sender, DataParsedEventArgs<TransferResponse> e);
     }
 }
