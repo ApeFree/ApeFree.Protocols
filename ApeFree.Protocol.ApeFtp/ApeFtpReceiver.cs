@@ -1,10 +1,10 @@
-﻿using System;
+﻿using STTech.BytesIO.Core;
+using STTech.BytesIO.Core.Component;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Security.Cryptography;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ApeFree.Protocol.ApeFtp
 {
@@ -17,7 +17,7 @@ namespace ApeFree.Protocol.ApeFtp
 
         /// <summary>
         /// 单文件最大长度
-        /// </summary
+        /// </summary>
         public int MaxFileSize { get; set; } = (int)Math.Pow(1024, 3);  // 默认单文件上限为1GB
 
         /// <summary>
@@ -30,29 +30,35 @@ namespace ApeFree.Protocol.ApeFtp
         /// </summary>
         public string TransferCompletedPath { get; set; }
 
+        protected ApeFtpReceiver(BytesClient client) : base(client) { }
 
-        protected ApeFtpReceiver(Action<byte[]> sendBytesHandler) : base(sendBytesHandler) { }
-
-        protected override void OnUnpackerDataParsed(object sender, STTech.BytesIO.Core.Component.DataParsedEventArgs e)
+        protected override void OnUnpackerDataParsed(object sender, DataParsedEventArgs<TransferResponse> e)
         {
-            CommandCode command = (CommandCode)e.Data.FirstOrDefault();
+            // 处理TransferResponse
+        }
+
+        /// <summary>
+        /// 处理接收到的数据
+        /// </summary>
+        /// <param name="data"></param>
+        public async Task HandleDataAsync(byte[] data)
+        {
+            var command = (CommandCode)data.FirstOrDefault();
 
             switch (command)
             {
                 case CommandCode.DemandRequest:
                     {
-                        var resp = OnDemandReceived(new DemandRequest(e.Data));
-                        SendBytesHandler?.Invoke(resp.GetBytes());
+                        var resp = OnDemandReceived(new DemandRequest(data));
+                        await InnerClient.SendAsync(resp);
                     }
                     break;
                 case CommandCode.TransferRequest:
                     {
-                        var req = new TransferRequest(e.Data);
+                        var req = new TransferRequest(data);
                         var resp = OnTransferReceived(req);
-                        SendBytesHandler?.Invoke(resp.GetBytes());
+                        await InnerClient.SendAsync(resp);
                     }
-                    break;
-                case CommandCode.TransferResponse:
                     break;
             }
         }
@@ -146,11 +152,13 @@ namespace ApeFree.Protocol.ApeFtp
                 if (state == TransferTaskState.Transmitting)
                 {
                     OnTransferCancelled(request.MD5, request.TotalLength);
-                    return resp.With(r => r.ResultCode = ResultCode.Cancelled);
+                    resp.ResultCode = ResultCode.Cancelled;
+                    return resp;
                 }
                 else
                 {
-                    return resp.With(r => r.ResultCode = ResultCode.InvalidCancelCommand);
+                    resp.ResultCode = ResultCode.InvalidCancelCommand;
+                    return resp;
                 }
             }
 
@@ -160,13 +168,15 @@ namespace ApeFree.Protocol.ApeFtp
                 // 检查传输任务是否经过了申请
                 if (state == TransferTaskState.Nonexistent)
                 {
-                    return resp.With(r => r.ResultCode = ResultCode.InvalidTransferTask);
+                    resp.ResultCode = ResultCode.InvalidTransferTask;
+                    return resp;
                 }
 
                 // 检查段序号是否合法（当前段序号应小于总段数）
                 if (request.SegmentIndex >= request.SegmentCount)
                 {
-                    return resp.With(r => r.ResultCode = ResultCode.InvalidSegmentIndex);
+                    resp.ResultCode = ResultCode.InvalidSegmentIndex;
+                    return resp;
                 }
 
                 // TODO: 还可以检查当前已接收文件的大小
@@ -231,7 +241,7 @@ namespace ApeFree.Protocol.ApeFtp
 
     public class SimpleReceiver : ApeFtpReceiver
     {
-        public SimpleReceiver(Action<byte[]> sendBytesHandler) : base(sendBytesHandler) { }
+        public SimpleReceiver(BytesClient client) : base(client) { }
 
         protected override TransferResponse AppendSegmentToFile(TransferRequest request)
         {

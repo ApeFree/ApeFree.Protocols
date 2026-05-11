@@ -1,9 +1,10 @@
-﻿using STTech.BytesIO.Core.Component;
+﻿using STTech.BytesIO.Core;
+using STTech.BytesIO.Core.Component;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace ApeFree.Protocol.ApeFtp
 {
@@ -19,7 +20,7 @@ namespace ApeFree.Protocol.ApeFtp
         /// </summary>
         public uint DefaultSegmentSize { get; set; } = 512 * 1024;           // 默认段最大长度为512KB
 
-        public ApeFtpSender(Action<byte[]> sendBytesHandler) : base(sendBytesHandler)
+        public ApeFtpSender(BytesClient client) : base(client)
         {
             Sessions = new List<TransferSession>();
         }
@@ -29,7 +30,7 @@ namespace ApeFree.Protocol.ApeFtp
             return Sessions.FirstOrDefault(s => s.TotalLength == fileLength && s.MD5.SequenceEqual(md5));
         }
 
-        public void SendFile(string path)
+        public async Task SendFileAsync(string path)
         {
             var fileBytes = File.ReadAllBytes(path);
             var md5 = fileBytes.GetMD5();
@@ -42,35 +43,37 @@ namespace ApeFree.Protocol.ApeFtp
                 SegmentLength = DefaultSegmentSize,
             };
 
-            OnSessionCreated(session);
+            await OnSessionCreatedAsync(session);
         }
 
-        protected void OnSessionCreated(TransferSession session)
+        protected async Task OnSessionCreatedAsync(TransferSession session)
         {
             session.State = SessionState.Created;
             session.SegmentIndex = 0;
             session.SegmentCount = 0;
             Sessions.Add(session);
             DemandRequest demandRequest = new DemandRequest(session.MD5, session.TotalLength, session.SegmentLength);
-            SendBytesHandler.Invoke(demandRequest.GetBytes());
+            await InnerClient.SendAsync(demandRequest);
         }
 
-        protected void OnSessionCompleted(TransferSession session)
+        protected void HandleSessionCompleted(TransferSession session)
         {
             session.State = SessionState.Completed;
             session.Stream?.Dispose();
             Sessions.Remove(session);
 
-            // TODO: 通过事件通知
+            // 触发完成事件
+            OnSessionCompleted?.Invoke(this, new SessionEventArgs(session));
         }
 
-        protected void OnSessionCancelled(TransferSession session)
+        protected void HandleSessionCancelled(TransferSession session)
         {
             session.State = SessionState.Cancelled;
             session.Stream?.Dispose();
             Sessions.Remove(session);
 
-            // TODO: 通过事件通知
+            // 触发取消事件
+            OnSessionCancelled?.Invoke(this, new SessionEventArgs(session));
         }
 
         protected void OnSessionFailedInterrupted(TransferSession session, ResultCode resultCode)
@@ -79,10 +82,11 @@ namespace ApeFree.Protocol.ApeFtp
             session.Stream?.Dispose();
             Sessions.Remove(session);
 
-            // TODO: 通过事件通知
+            // 触发失败事件
+            OnSessionFailed?.Invoke(this, new SessionFailedEventArgs(session, resultCode));
         }
 
-        protected void OnTransferSessionContinue(TransferSession session)
+        protected async Task OnTransferSessionContinueAsync(TransferSession session)
         {
             // 首次段长度协商成功
             if (session.State == SessionState.Created)
@@ -121,21 +125,12 @@ namespace ApeFree.Protocol.ApeFtp
                 request.Data = data.Take((int)request.CurrentSegmentLength).ToArray();
             }
 
-            var bytes = request.GetBytes();
-            SendBytesHandler(bytes);
+            await InnerClient.SendAsync(request);
         }
 
-        protected override void OnUnpackerDataParsed(object sender, DataParsedEventArgs e)
+        protected override async void OnUnpackerDataParsed(object sender, DataParsedEventArgs<TransferResponse> e)
         {
-            CommandCode command = (CommandCode)e.Data.FirstOrDefault();
-
-            if (command != CommandCode.TransferResponse)
-            {
-                return;
-            }
-
-            var resp = new TransferResponse(e.Data);
-
+            var resp = e.Data;
             var session = GetSession(resp.Md5, resp.TotalLength);
             if (session == null)
             {
@@ -146,17 +141,17 @@ namespace ApeFree.Protocol.ApeFtp
             {
                 case ResultCode.Continue:
                     {
-                        OnTransferSessionContinue(session);
+                        await OnTransferSessionContinueAsync(session);
                     }
                     break;
                 case ResultCode.Completed:
                     {
-                        OnSessionCompleted(session);
+                        HandleSessionCompleted(session);
                     }
                     break;
                 case ResultCode.Cancelled:
                     {
-                        OnSessionCancelled(session);
+                        HandleSessionCancelled(session);
                     }
                     break;
                 case ResultCode.SegmentSizeTooLarge:
@@ -174,7 +169,7 @@ namespace ApeFree.Protocol.ApeFtp
 
                         // 重新申请文件发送
                         DemandRequest demandRequest = new DemandRequest(session.MD5, session.TotalLength, session.SegmentLength);
-                        SendBytesHandler.Invoke(demandRequest.GetBytes());
+                        await InnerClient.SendAsync(demandRequest);
                     }
                     break;
                 case ResultCode.InsufficientDiskSpace:
@@ -190,11 +185,26 @@ namespace ApeFree.Protocol.ApeFtp
                     {
                         // 重新传输
                         Sessions.Remove(session);
-                        OnSessionCreated(session);
+                        await OnSessionCreatedAsync(session);
                     }
                     break;
             }
         }
+
+        /// <summary>
+        /// 当会话完成时触发
+        /// </summary>
+        public event EventHandler<SessionEventArgs> OnSessionCompleted;
+
+        /// <summary>
+        /// 当会话取消时触发
+        /// </summary>
+        public event EventHandler<SessionEventArgs> OnSessionCancelled;
+
+        /// <summary>
+        /// 当会话失败时触发
+        /// </summary>
+        public event EventHandler<SessionFailedEventArgs> OnSessionFailed;
 
         /// <summary>
         /// 传输事务（一次传输任务）
@@ -243,40 +253,66 @@ namespace ApeFree.Protocol.ApeFtp
         }
 
         /// <summary>
-        /// Represents the state of a session.
+        /// 会话状态
         /// </summary>
         public enum SessionState
         {
             /// <summary>
-            /// 已创建<br/>
-            /// The session has been created.
+            /// 已创建
             /// </summary>
             Created,
             /// <summary>
-            /// 准备传输<br/>
-            /// The session is ready to transfer.
+            /// 准备传输
             /// </summary>
             ReadyToTransfer,
             /// <summary>
-            /// 传输中<br/>
-            /// The session is currently transferring.
+            /// 传输中
             /// </summary>
             Transferring,
             /// <summary>
-            /// 已完成<br/>
-            /// The session transfer has been completed.
+            /// 已完成
             /// </summary>
             Completed,
             /// <summary>
-            /// 已取消<br/>
-            /// The session transfer has been cancelled.
+            /// 已取消
             /// </summary>
             Cancelled,
             /// <summary>
-            /// 错误中断<br/>
-            /// The session transfer has been interrupted due to failure.
+            /// 错误中断
             /// </summary>
             FailedInterrupted,
+        }
+
+        /// <summary>
+        /// 会话事件参数
+        /// </summary>
+        public class SessionEventArgs : EventArgs
+        {
+            /// <summary>
+            /// 会话对象
+            /// </summary>
+            public TransferSession Session { get; }
+
+            public SessionEventArgs(TransferSession session)
+            {
+                Session = session;
+            }
+        }
+
+        /// <summary>
+        /// 会话失败事件参数
+        /// </summary>
+        public class SessionFailedEventArgs : SessionEventArgs
+        {
+            /// <summary>
+            /// 失败原因
+            /// </summary>
+            public ResultCode ResultCode { get; }
+
+            public SessionFailedEventArgs(TransferSession session, ResultCode resultCode) : base(session)
+            {
+                ResultCode = resultCode;
+            }
         }
     }
 }
