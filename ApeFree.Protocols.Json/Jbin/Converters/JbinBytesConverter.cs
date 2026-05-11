@@ -12,7 +12,7 @@ namespace ApeFree.Protocols.Json.Jbin
 
     /// <summary>
     /// 字节数组转换器
-    /// <para>【教学说明】：</para>
+    /// <para>说明：</para>
     /// <para>1. 本转换器专门处理 <c>byte[]</c> 类型及其常见的容器类型（如 <c>byte[][]</c> 和 <c>List&lt;byte[]&gt;</c>）。</para>
     /// <para>2. 对于单一的 <c>byte[]</c>，它直接将其作为原始二进制块存储到 Jbin 中，不进行任何额外的包装，性能极高。</para>
     /// <para>3. 对于字节数组的集合，它采用了自定义的简单协议：[4字节元素个数] + [每个元素的(4字节长度 + 实际二进制内容)]。</para>
