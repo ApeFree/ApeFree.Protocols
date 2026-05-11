@@ -1,16 +1,16 @@
 ﻿using STTech.BytesIO.Core;
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace ApeFree.Protocol.ApeFtp
 {
     /// <summary>
-    /// 
+    /// 基础请求类
     /// </summary>
     public abstract class BaseRequest : IRequest
     {
         /// <summary>
-        /// 功能码
+        /// 命令码
         /// </summary>
         public CommandCode CommandCode { get; }
 

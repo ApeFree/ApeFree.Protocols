@@ -1,4 +1,4 @@
-﻿using STTech.BytesIO.Core;
+﻿﻿using STTech.BytesIO.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace ApeFree.Protocol.ApeFtp
     /// <summary>
     /// 传输响应
     /// </summary>
-    public class TransferResponse
+    public class TransferResponse : IRequest
     {
         /// <summary>
         /// 命令码
