@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -24,6 +24,11 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
+        {
+            return ConvertBytesToValue(bytes, defineType, realType, 0);
+        }
+
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType, int modeId)
         {
             if (realType == typeof(Point))
             {
@@ -67,10 +72,15 @@ namespace ApeFree.Protocols.Json.Jbin
         {
             var type = value.GetType();
 
-            return ConvertValueToBytes(type, value);
+            return ConvertValueToBytes(type, value, 0);
         }
 
         public override byte[] ConvertValueToBytes(Type type, object value)
+        {
+            return ConvertValueToBytes(type, value, 0);
+        }
+
+        public override byte[] ConvertValueToBytes(Type type, object value, int modeId)
         {
             // 预定义的序列化处理映射
             if (_serializers.TryGetValue(type, out var serializer))

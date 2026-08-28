@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -65,7 +65,6 @@ namespace ApeFree.Protocols.Json.Jbin
             }
             else
             {
-                // 如果类型既不是Array也不是List则跳过
                 return null;
             }
 
@@ -73,6 +72,11 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
+        {
+            return ConvertBytesToValue(bytes, defineType, realType, 0);
+        }
+
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType, int modeId)
         {
             Dictionary<Type, IJbinFieldConverter> dictConverter = new Dictionary<Type, IJbinFieldConverter>();
 
@@ -104,7 +108,7 @@ namespace ApeFree.Protocols.Json.Jbin
                                 dictConverter[elementType] = converter;
                             }
 
-                            var item = converter.ConvertBytesToValue(block, elementType, elementType);
+                            var item = converter.ConvertBytesToValue(block, elementType, elementType, modeId);
                             AddDataToList(group, item);
                         }
                     }
@@ -124,10 +128,15 @@ namespace ApeFree.Protocols.Json.Jbin
         public override byte[] ConvertValueToBytes(object value)
         {
             var type = value.GetType();
-            return ConvertValueToBytes(type, value);
+            return ConvertValueToBytes(type, value, 0);
         }
 
         public override byte[] ConvertValueToBytes(Type type, object value)
+        {
+            return ConvertValueToBytes(type, value, 0);
+        }
+
+        public override byte[] ConvertValueToBytes(Type type, object value, int modeId)
         {
             Dictionary<Type, IJbinFieldConverter> dictConverter = new Dictionary<Type, IJbinFieldConverter>();
             Type elementType;
@@ -168,15 +177,14 @@ namespace ApeFree.Protocols.Json.Jbin
                         }
                         else
                         {
-                            // 选择一个转换器
                             IJbinFieldConverter converter;
                             if (!dictConverter.TryGetValue(elementType, out converter))
                             {
                                 converter = Converters.First(x => x.CanSerialize(elementType));
                                 dictConverter[elementType] = converter;
                             }
-                          
-                            var data = converter.ConvertValueToBytes(block);
+
+                            var data = converter.ConvertValueToBytes(elementType, block, modeId);
                             bw.Write(data.Length);
                             bw.Write(data);
                         }
@@ -189,13 +197,8 @@ namespace ApeFree.Protocols.Json.Jbin
         #region 反射列表操作
         private static object CreateList(Type elementType)
         {
-            // 获取 List<> 的泛型类型定义
             Type listType = typeof(List<>).GetGenericTypeDefinition();
-
-            // 构建具体的泛型类型
             Type specificListType = listType.MakeGenericType(elementType);
-
-            // 创建实例
             return Activator.CreateInstance(specificListType);
         }
 
@@ -206,11 +209,9 @@ namespace ApeFree.Protocols.Json.Jbin
                 return;
             }
 
-            // 获取 Add 方法
             MethodInfo addMethod = list.GetType().GetMethod("Add");
             if (addMethod != null)
             {
-                // 调用 Add 方法添加数据
                 addMethod.Invoke(list, new object[] { data });
             }
         }
@@ -222,11 +223,9 @@ namespace ApeFree.Protocols.Json.Jbin
                 return null;
             }
 
-            // 获取 ToArray 方法
             MethodInfo toArrayMethod = list.GetType().GetMethod("ToArray");
             if (toArrayMethod != null)
             {
-                // 调用 ToArray 方法将列表转换为数组
                 return toArrayMethod.Invoke(list, null);
             }
             return null;

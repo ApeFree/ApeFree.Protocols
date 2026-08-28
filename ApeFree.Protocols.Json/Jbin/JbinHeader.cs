@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -33,6 +33,11 @@ namespace ApeFree.Protocols.Json.Jbin
         /// 数据类型列表
         /// </summary>
         public Type[] Types { get; set; }
+
+        /// <summary>
+        /// 类型序列化模式字典（类型名称 -> 模式ID）
+        /// </summary>
+        public Dictionary<string, int> TypeModes { get; set; }
 
         /// <summary>
         /// 标签字典

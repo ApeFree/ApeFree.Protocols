@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -113,28 +113,24 @@ namespace ApeFree.Protocols.Json.Jbin
             // 判断long类型的数值是否符合拼接数的特征
             if (reader.Value is long id && ((id >> 63) & 1) != 0 && ((id >> 31) & 1) != 0)
             {
-                // 尝试拆出TypeId和BlockId
-                int typeId = (int)((id >> 32) & 0x7FFFFFFF);    // 提取高 32 位并清除最高位标志
-                int blockId = (int)(id & 0x7FFFFFFF);           // 提取低 32 位并清除最高位标志
+                // 尝试拆出ModeId、TypeId和BlockId
+                int modeId = (int)((id >> 55) & 0xFF);
+                int typeId = (int)((id >> 32) & 0x007FFFFF);
+                int blockId = (int)(id & 0x7FFFFFFF);
 
                 // 检查ID是否有效
                 if (typeId < DataTypes.Count && blockId < DataBlocks.Count)
                 {
                     var realType = DataTypes[typeId];
-                    //var block = DataBlocks[blockId];
-                    //byte[] bytes = new byte[block.Length];
-                    //block.CopyTo(bytes, 0);
                     var bytes = DataBlocks[blockId];
 
-
                     // 寻找匹配的序列化器
-                    // 这里可以使用缓存优化查找速度
                     var js = Serializers.FirstOrDefault(x => x.CanDeserialize(defineType, realType));
 
                     if (js != null)
                     {
-                        // 将数据块还原
-                        var value = js.ConvertBytesToValue(bytes, defineType, realType);
+                        // 将数据块还原（自适应传入 modeId）
+                        var value = js.ConvertBytesToValue(bytes, defineType, realType, modeId);
                         return value;
                     }
                     else

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Text;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
@@ -53,20 +47,6 @@ namespace ApeFree.Protocols.Json.Jbin
         /// 当初始化完成后（重置数据块列表）
         /// </summary>
         protected virtual void OnInitialized() { }
-
-        ///// <summary>
-        ///// 将数据转换为字节数组
-        ///// </summary>
-        ///// <param name="value"></param>
-        ///// <returns></returns>
-        //internal abstract byte[] ConvertObjectToBytes(object value);
-
-        ///// <summary>
-        ///// 将字节数组转换为数据
-        ///// </summary>
-        ///// <param name="bytes"></param>
-        ///// <returns></returns>
-        //internal abstract object ConvertBytesToObject(byte[] bytes, Type defineType, Type realType);
     }
 
     public abstract class JbinSerializer<T> : JbinConverter, IJbinFieldSerializer
@@ -75,6 +55,8 @@ namespace ApeFree.Protocols.Json.Jbin
         {
             return objectType == typeof(T);
         }
+
+        public virtual int GetSerializationMode(Type objectType) => 0;
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -85,8 +67,10 @@ namespace ApeFree.Protocols.Json.Jbin
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             long blockId = 0;
+            var valueType = value.GetType();
+            int modeId = GetSerializationMode(valueType);
 
-            var bytes = ConvertValueToBytes((T)value);
+            var bytes = ConvertValueToBytes(valueType, value, modeId);
             lock (DataBlocks)
             {
                 DataBlocks.Add(bytes);
@@ -94,8 +78,6 @@ namespace ApeFree.Protocols.Json.Jbin
             }
 
             long typeId = 0;
-            var valueType = value.GetType();
-
             lock (DataTypes)
             {
                 typeId = DataTypes.IndexOf(valueType);
@@ -106,15 +88,29 @@ namespace ApeFree.Protocols.Json.Jbin
                 }
             }
 
-            // 合并数据类型Id和数据块Id为一个long（合并时将这两个数值的最高位设置为1）
-            long combinedId = (typeId << 32) | (uint)blockId;
-            combinedId |= (long)1 << 31;
-            combinedId |= (long)1 << 63;
+            // 合并ModeId、TypeId和BlockId为一个long：
+            // Bit 63: 1 (Magic)
+            // Bits 55..62 (8 bits): modeId
+            // Bits 32..54 (23 bits): typeId
+            // Bit 31: 1 (Magic)
+            // Bits 0..30 (31 bits): blockId
+            long combinedId = ((long)(modeId & 0xFF) << 55) | (((long)typeId & 0x007FFFFF) << 32) | ((uint)blockId & 0x7FFFFFFF);
+            combinedId |= (1L << 63);
+            combinedId |= (1L << 31);
 
             writer.WriteValue(combinedId);
         }
 
-        public abstract byte[] ConvertValueToBytes(object value);
-        public abstract byte[] ConvertValueToBytes(Type type, object value);
+        public virtual byte[] ConvertValueToBytes(object value)
+        {
+            return ConvertValueToBytes(value?.GetType(), value, 0);
+        }
+
+        public virtual byte[] ConvertValueToBytes(Type type, object value)
+        {
+            return ConvertValueToBytes(type, value, 0);
+        }
+
+        public abstract byte[] ConvertValueToBytes(Type type, object value, int modeId);
     }
 }

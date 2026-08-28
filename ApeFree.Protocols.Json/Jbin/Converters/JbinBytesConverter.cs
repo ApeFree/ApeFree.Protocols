@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -21,6 +21,11 @@ namespace ApeFree.Protocols.Json.Jbin
 
         public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
         {
+            return ConvertBytesToValue(bytes, defineType, realType, 0);
+        }
+
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType, int modeId)
+        {
             if (realType == SupportedTypes[0])
             {
                 return bytes;
@@ -42,7 +47,6 @@ namespace ApeFree.Protocols.Json.Jbin
                         }
                     }
                 }
-
 
                 if (realType == SupportedTypes[1])
                 {
@@ -96,6 +100,11 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         public override byte[] ConvertValueToBytes(Type type, object value)
+        {
+            return ConvertValueToBytes(type, value, 0);
+        }
+
+        public override byte[] ConvertValueToBytes(Type type, object value, int modeId)
         {
             // 基础类型直接处理
             if (type == typeof(byte[]))

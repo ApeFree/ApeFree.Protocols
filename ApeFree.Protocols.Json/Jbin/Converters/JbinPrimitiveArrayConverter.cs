@@ -1,14 +1,40 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace ApeFree.Protocols.Json.Jbin
 {
     /// <summary>
-    /// 基元类型数组转换器
+    /// 基元类型数组转换器（支持多模式与时序/基元压缩算法）
     /// </summary>
     public class JbinPrimitiveArrayConverter : JbinSerializer<Array>, IJbinFieldDeserializer
     {
+        /// <summary>
+        /// 32位整数数组序列化模式
+        /// </summary>
+        public Int32ArrayCompressMode Int32Mode { get; set; } = Int32ArrayCompressMode.Raw;
+
+        /// <summary>
+        /// 单精度浮点数组序列化模式
+        /// </summary>
+        public SingleArrayCompressMode SingleMode { get; set; } = SingleArrayCompressMode.Raw;
+
+        /// <summary>
+        /// 双精度浮点数组序列化模式
+        /// </summary>
+        public DoubleArrayCompressMode DoubleMode { get; set; } = DoubleArrayCompressMode.Raw;
+
+        /// <summary>
+        /// 64位整数数组序列化模式
+        /// </summary>
+        public Int64ArrayCompressMode Int64Mode { get; set; } = Int64ArrayCompressMode.Raw;
+
+        /// <summary>
+        /// 16位整数数组序列化模式
+        /// </summary>
+        public Int16ArrayCompressMode Int16Mode { get; set; } = Int16ArrayCompressMode.Raw;
+
         /// <inheritdoc/>
         public override bool CanSerialize(Type objectType)
         {
@@ -18,18 +44,7 @@ namespace ApeFree.Protocols.Json.Jbin
             }
 
             var elementType = objectType.GetElementType();
-
-            if (!elementType.IsPrimitive)
-            {
-                return false;
-            }
-
-            if (elementType == typeof(byte))
-            {
-                return false;
-            }
-
-            return true;
+            return IsSupportedElementType(elementType);
         }
 
         /// <inheritdoc/>
@@ -41,22 +56,42 @@ namespace ApeFree.Protocols.Json.Jbin
             }
 
             var elementType = realType.GetElementType();
+            return IsSupportedElementType(elementType);
+        }
 
-            if (!elementType.IsPrimitive)
+        private static bool IsSupportedElementType(Type elementType)
+        {
+            if (elementType == null || elementType == typeof(byte))
             {
                 return false;
             }
 
-            if (elementType == typeof(byte))
-            {
-                return false;
-            }
+            return elementType.IsPrimitive || elementType == typeof(decimal) || elementType.IsEnum;
+        }
 
-            return true;
+        /// <inheritdoc/>
+        public override int GetSerializationMode(Type objectType)
+        {
+            if (!objectType.IsArray) return 0;
+            var elemType = objectType.GetElementType();
+
+            if (elemType == typeof(int)) return (int)Int32Mode;
+            if (elemType == typeof(float)) return (int)SingleMode;
+            if (elemType == typeof(double)) return (int)DoubleMode;
+            if (elemType == typeof(long)) return (int)Int64Mode;
+            if (elemType == typeof(short)) return (int)Int16Mode;
+
+            return 0;
         }
 
         /// <inheritdoc/>
         public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType)
+        {
+            return ConvertBytesToValue(bytes, defineType, realType, 0);
+        }
+
+        /// <inheritdoc/>
+        public object ConvertBytesToValue(byte[] bytes, Type defineType, Type realType, int modeId)
         {
             var elementType = realType.GetElementType();
 
@@ -64,36 +99,98 @@ namespace ApeFree.Protocols.Json.Jbin
             {
                 return bytes;
             }
-            else
+
+            // 根据 ModeId 自适应解压缩还原
+            if (modeId != 0)
             {
-                var array = ConvertBytesToArray(elementType, bytes);
-                return array;
+                if (elementType == typeof(int) && modeId == (int)Int32ArrayCompressMode.FrameOfReference)
+                {
+                    return bytes.DecompressForInt32();
+                }
+
+                if (elementType == typeof(float) && modeId == (int)SingleArrayCompressMode.Gorilla)
+                {
+                    return bytes.DecompressGorillaSingle();
+                }
+
+                if (elementType == typeof(double) && modeId == (int)DoubleArrayCompressMode.Gorilla)
+                {
+                    return bytes.DecompressGorillaDouble();
+                }
+
+                if (elementType == typeof(long) && modeId == (int)Int64ArrayCompressMode.Simple8b)
+                {
+                    return bytes.DecompressSimple8bInt64();
+                }
+
+                if (elementType == typeof(short) && modeId == (int)Int16ArrayCompressMode.DeltaBitPacking)
+                {
+                    return bytes.DecompressDeltaBitPackingInt16();
+                }
             }
+
+            // 默认 Raw 模式
+            return ConvertBytesToArray(elementType, bytes);
         }
 
         /// <inheritdoc/>
         public override byte[] ConvertValueToBytes(object value)
         {
-            var type = value.GetType();
-            return ConvertValueToBytes(type, value);
+            return ConvertValueToBytes(value?.GetType(), value, 0);
         }
 
         /// <inheritdoc/>
         public override byte[] ConvertValueToBytes(Type type, object value)
         {
+            int modeId = GetSerializationMode(type);
+            return ConvertValueToBytes(type, value, modeId);
+        }
+
+        /// <inheritdoc/>
+        public override byte[] ConvertValueToBytes(Type type, object value, int modeId)
+        {
             if (value is byte[] data)
             {
                 return data;
             }
-            else
+
+            var elemType = type.IsArray ? type.GetElementType() : value.GetType().GetElementType();
+
+            // 根据指定的 ModeId 进行压缩序列化
+            if (modeId != 0)
             {
-                var bytes = ConvertArrayToBytes((Array)value);
-                return bytes;
+                if (elemType == typeof(int) && modeId == (int)Int32ArrayCompressMode.FrameOfReference && value is int[] intArr)
+                {
+                    return intArr.CompressFor();
+                }
+
+                if (elemType == typeof(float) && modeId == (int)SingleArrayCompressMode.Gorilla && value is float[] floatArr)
+                {
+                    return floatArr.CompressGorilla();
+                }
+
+                if (elemType == typeof(double) && modeId == (int)DoubleArrayCompressMode.Gorilla && value is double[] doubleArr)
+                {
+                    return doubleArr.CompressGorilla();
+                }
+
+                if (elemType == typeof(long) && modeId == (int)Int64ArrayCompressMode.Simple8b && value is long[] longArr)
+                {
+                    return longArr.CompressSimple8b();
+                }
+
+                if (elemType == typeof(short) && modeId == (int)Int16ArrayCompressMode.DeltaBitPacking && value is short[] shortArr)
+                {
+                    return shortArr.CompressDeltaBitPacking();
+                }
             }
+
+            // 默认 Raw 模式
+            return ConvertArrayToBytes((Array)value);
         }
 
         /// <summary>
-        /// 将基元类型的数组转为字节数组
+        /// 将基元类型的数组转为字节数组 (Raw 内存拷贝)
         /// </summary>
         /// <param name="array">基元类型的数组</param>
         private byte[] ConvertArrayToBytes(Array array)
@@ -104,7 +201,22 @@ namespace ApeFree.Protocols.Json.Jbin
             var bytes = new byte[length];
             try
             {
-                Buffer.BlockCopy(array, 0, bytes, 0, length);
+                if (elemType.IsPrimitive)
+                {
+                    Buffer.BlockCopy(array, 0, bytes, 0, length);
+                }
+                else
+                {
+                    var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+                    try
+                    {
+                        Marshal.Copy(handle.AddrOfPinnedObject(), bytes, 0, length);
+                    }
+                    finally
+                    {
+                        handle.Free();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -115,7 +227,7 @@ namespace ApeFree.Protocols.Json.Jbin
         }
 
         /// <summary>
-        /// 将字节数组还原为基元类型的数组
+        /// 将字节数组还原为基元类型的数组 (Raw 内存拷贝)
         /// </summary>
         /// <param name="elemType">基元类型</param>
         /// <param name="bytes">字节数组</param>
@@ -127,7 +239,22 @@ namespace ApeFree.Protocols.Json.Jbin
             var array = Array.CreateInstance(elemType, length);
             try
             {
-                Buffer.BlockCopy(bytes, 0, array, 0, bytes.Length);
+                if (elemType.IsPrimitive)
+                {
+                    Buffer.BlockCopy(bytes, 0, array, 0, bytes.Length);
+                }
+                else
+                {
+                    var handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+                    try
+                    {
+                        Marshal.Copy(bytes, 0, handle.AddrOfPinnedObject(), bytes.Length);
+                    }
+                    finally
+                    {
+                        handle.Free();
+                    }
+                }
             }
             catch (Exception ex)
             {
