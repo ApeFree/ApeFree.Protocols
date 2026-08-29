@@ -4,16 +4,17 @@
 		<TargetFrameworks>netstandard2.0;net452;net8.0;net10.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 
-		<Title>ApeFree.Protocols</Title>
+		<Title>ApeFree.Protocols.Json</Title>
 		<Product>ApeFree.Protocols.Json</Product>
-		<Version>0.0.4.0-alpha0829</Version>
+		<Version>0.0.4.1</Version>
 		<Authors>Guijie Lee</Authors>
 		<Company>ApeFree</Company>
 		<Copyright>Copyright © 2022-2025 ApeFree, All Rights Reserved.</Copyright>
-		<Description>Serialization tools for JSON - related protocols (or data formats) (such as JsonRPC, Jbin, JbinRPC, etc.)</Description>
+		<Description>Serialization tools for JSON-related protocols (or data formats) (such as JsonRPC, Jbin, JbinRPC, etc.)</Description>
 
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageProjectUrl>https://github.com/ApeFree</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/ApeFree</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>ApeFree_64px.png</PackageIcon>
@@ -34,11 +35,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md">
+		<None Include="README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-		<None Include="..\ApeFree_64px.png">
+		<None Include="ApeFree_64px.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
