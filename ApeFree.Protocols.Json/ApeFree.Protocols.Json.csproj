@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net452;net8.0;net10.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 
 		<Title>ApeFree.Protocols</Title>
 		<Product>ApeFree.Protocols.Json</Product>
-		<Version>0.0.3.2-alpha1106</Version>
+		<Version>0.0.4.0-alpha0829</Version>
 		<Authors>Guijie Lee</Authors>
 		<Company>ApeFree</Company>
 		<Copyright>Copyright © 2022-2025 ApeFree, All Rights Reserved.</Copyright>
@@ -17,6 +17,7 @@
 		<RepositoryUrl>https://github.com/ApeFree</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>ApeFree_64px.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -33,6 +34,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
 		<None Include="..\ApeFree_64px.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
@@ -41,10 +46,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\STTech.CodePlus\STTech.CodePlus\STTech.CodePlus.csproj" />
+		<PackageReference Include="STTech.CodePlus" Version="1.7.6" />
 	</ItemGroup>
 
 </Project>

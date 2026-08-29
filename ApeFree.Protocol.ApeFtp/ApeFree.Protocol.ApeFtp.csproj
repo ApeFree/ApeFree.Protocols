@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\STTech.BytesIO\STTech.BytesIO.Core\STTech.BytesIO.Core.csproj" />
-    <ProjectReference Include="..\..\STTech.BytesIO\STTech.BytesIO.Tcp\STTech.BytesIO.Tcp.csproj" />
+    <ProjectReference Include="..\..\STTech.BytesIO\STTech.BytesIO\STTech.BytesIO.csproj" />
   </ItemGroup>
 </Project>
