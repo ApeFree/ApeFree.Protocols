@@ -121,6 +121,15 @@ namespace ApeFree.Protocols.Json.Jbin
                 // 检查ID是否有效
                 if (typeId < DataTypes.Count && blockId < DataBlocks.Count)
                 {
+                    // 1. 优先从反序列化缓存中查找已解包的对象实例
+                    lock (Context.DeserializedBlockCache)
+                    {
+                        if (Context.DeserializedBlockCache.TryGetValue(blockId, out var cachedValue))
+                        {
+                            return cachedValue;
+                        }
+                    }
+
                     var realType = DataTypes[typeId];
                     var bytes = DataBlocks[blockId];
 
@@ -131,6 +140,16 @@ namespace ApeFree.Protocols.Json.Jbin
                     {
                         // 将数据块还原（自适应传入 modeId）
                         var value = js.ConvertBytesToValue(bytes, defineType, realType, modeId);
+
+                        // 2. 针对引用类型记录到反序列化实例缓存
+                        if (value != null && !realType.IsValueType)
+                        {
+                            lock (Context.DeserializedBlockCache)
+                            {
+                                Context.DeserializedBlockCache[blockId] = value;
+                            }
+                        }
+
                         return value;
                     }
                     else

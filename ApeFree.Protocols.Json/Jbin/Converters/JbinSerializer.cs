@@ -66,8 +66,28 @@ namespace ApeFree.Protocols.Json.Jbin
         /// <inheritdoc/>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            long blockId = 0;
+            if (value == null)
+            {
+                writer.WriteNull();
+                return;
+            }
+
             var valueType = value.GetType();
+
+            // 针对引用类型检查是否已有相同的对象实例已被序列化
+            if (!valueType.IsValueType)
+            {
+                lock (Context.SerializedObjectMap)
+                {
+                    if (Context.SerializedObjectMap.TryGetValue(value, out long existingCombinedId))
+                    {
+                        writer.WriteValue(existingCombinedId);
+                        return;
+                    }
+                }
+            }
+
+            long blockId = 0;
             int modeId = GetSerializationMode(valueType);
 
             var bytes = ConvertValueToBytes(valueType, value, modeId);
@@ -97,6 +117,15 @@ namespace ApeFree.Protocols.Json.Jbin
             long combinedId = ((long)(modeId & 0xFF) << 55) | (((long)typeId & 0x007FFFFF) << 32) | ((uint)blockId & 0x7FFFFFFF);
             combinedId |= (1L << 63);
             combinedId |= (1L << 31);
+
+            // 针对引用类型记录到已序列化字典中
+            if (!valueType.IsValueType)
+            {
+                lock (Context.SerializedObjectMap)
+                {
+                    Context.SerializedObjectMap[value] = combinedId;
+                }
+            }
 
             writer.WriteValue(combinedId);
         }
