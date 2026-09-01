@@ -1,10 +1,51 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\STTech.BytesIO\STTech.BytesIO\STTech.BytesIO.csproj" />
-  </ItemGroup>
+		<Title>ApeFree.Protocol.ApeFtp</Title>
+		<Product>ApeFree.Protocol.ApeFtp</Product>
+		<Version>0.1.0</Version>
+		<Authors>Guijie Lee</Authors>
+		<Company>ApeFree</Company>
+		<Copyright>Copyright © 2022-2026 ApeFree, All Rights Reserved.</Copyright>
+		<Description>A lightweight, high-performance, transport-agnostic binary chunked file transfer protocol engine (Sans-I/O) for .NET.</Description>
+
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageProjectUrl>https://github.com/ApeFree</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/ApeFree</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageIcon>ApeFree_64px.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
+		<GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+
+		<PackageReleaseNotes>
+			1. Complete refactoring to Sans-I/O pure protocol engine architecture.
+			2. Add magic number framing and VarInt variable-length integer support.
+			3. Implement burst window flow control (Batch/Burst ACK) and IEEE 802.3 CRC32 chunk verification.
+			4. Decouple storage and state management with ITransferSessionStore and ITransferDataSink/Source.
+		</PackageReleaseNotes>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\ApeFree_64px.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
 </Project>
